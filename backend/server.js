@@ -11,7 +11,7 @@ connectDB()
     })
 
     app.on('error', (error) => {
-      console.error('ERROR in server CONNECTION (file:index.js)', error)
+      console.error('ERROR in server CONNECTION (file:server.js)', error)
       process.exit(1)
     })
   })
