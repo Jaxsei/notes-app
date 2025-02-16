@@ -7,16 +7,18 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import bcrypt from 'bcryptjs'
 
 // Generate Access & Refresh Tokens
-export const generateRefreshAccessTokens = (userId) => {
-  const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET || 'athanasia', // for testing purposes, dont use the visible secret,
-    {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '1d',
-    });
+export const generateTokens = (userId) => {
+  const accessToken = jwt.sign(
+    { userId },
+    process.env.JWT_SECRET || 'athanasia',
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' } // Shorter expiry for access token
+  );
 
-  const refreshToken = jwt.sign({ userId }, process.env.JWT_SECRET || 'athanasia',  // for testing purposes, dont use the visible secret,
-    {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d',
-    });
+  const refreshToken = jwt.sign(
+    { userId },
+    process.env.JWT_SECRET || 'athanasia',
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' } // Longer expiry for refresh token
+  );
 
   return { accessToken, refreshToken };
 };
@@ -24,6 +26,7 @@ export const generateRefreshAccessTokens = (userId) => {
 export const registerUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
+  console.log(process.env.JWT_SECRET)
   if ([email, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
@@ -116,10 +119,9 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid credentials");
   }
 
-  // 3. Generate tokens correctly
-  const { accessToken, refreshToken } = generateRefreshAccessTokens(user._id);
+  const { accessToken, refreshToken } = generateTokens(user._id);
 
-  // 4. Set refresh token as httpOnly cookie
+  // Set refresh token as HTTP-only cookie
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -127,12 +129,19 @@ export const loginUser = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  // 5. Return response with access token
+  // Set access token as HTTP-only cookie (NEW)
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 15 * 60 * 1000, // Shorter lifespan (15 mins)
+  });
+
+  // Send response
   res.status(200).json({
-    accessToken,
     user: {
       _id: user._id,
-      username: user.username, // Return username too
+      username: user.username,
       email: user.email,
       avatar: user.avatar,
     },

@@ -10,10 +10,10 @@ if (!fs.existsSync(tempDir)) {
 
 // 🛠 Storage Configuration
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function(req, file, cb) {
     cb(null, tempDir); // Stores files in /public/temp
   },
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname)); // Unique filename
   }
