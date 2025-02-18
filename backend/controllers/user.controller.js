@@ -26,10 +26,13 @@ export const generateTokens = (userId) => {
 export const registerUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
-  console.log(process.env.JWT_SECRET)
   if ([email, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
+
+  username = username?.toLowerCase();
+  email = email?.toLowerCase();
+
 
   if (password.length < 8) {
     throw new ApiError(400, "Password must be at least 8 characters");
@@ -41,7 +44,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 
   // Handle avatar upload
-  const avatarImageLocalPath = req.files?.avatar?.[0]?.path;
+  const avatarImageLocalPath = req.file?.path;
   if (!avatarImageLocalPath) {
     throw new ApiError(400, "Avatar file is required");
   }
@@ -62,12 +65,12 @@ export const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
   });
 
-  const { accessToken, refreshToken } = generateRefreshAccessTokens(user._id);
+  const { accessToken, refreshToken } = generateTokens(user._id);
 
   // Store refresh token in HTTP-only cookie
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: true, // Set to true in production
+    secure: process.env.NODE_ENV, // Set to true in production
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
@@ -90,6 +93,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 //LoginUser
 export const loginUser = asyncHandler(async (req, res) => {
   let { username, email, password } = req.body;
+  console.log(req.body.username, req.body.email)
 
   if ([email, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
@@ -124,7 +128,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   // Set refresh token as HTTP-only cookie
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV,
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -132,7 +136,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   // Set access token as HTTP-only cookie (NEW)
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV,
     sameSite: "strict",
     maxAge: 15 * 60 * 1000, // Shorter lifespan (15 mins)
   });
