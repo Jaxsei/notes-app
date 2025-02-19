@@ -4,7 +4,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcryptjs';
+import validator from "validator";
 
 // Generate Access & Refresh Tokens
 export const generateTokens = (userId) => {
@@ -22,9 +23,10 @@ export const generateTokens = (userId) => {
 
   return { accessToken, refreshToken };
 };
-// Register User
+
+
 export const registerUser = asyncHandler(async (req, res) => {
-  const { email, username, password } = req.body;
+  let { email, username, password } = req.body;
 
   if ([email, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
@@ -33,6 +35,9 @@ export const registerUser = asyncHandler(async (req, res) => {
   username = username?.toLowerCase();
   email = email?.toLowerCase();
 
+  if(!validator.isEmail(email)){
+    throw new ApiError(401, 'Invalid email format')
+  }
 
   if (password.length < 8) {
     throw new ApiError(400, "Password must be at least 8 characters");
@@ -87,13 +92,10 @@ export const registerUser = asyncHandler(async (req, res) => {
   }, "User registered successfully"));
 });
 
-
-
-
 //LoginUser
 export const loginUser = asyncHandler(async (req, res) => {
   let { username, email, password } = req.body;
-  console.log(req.body.username, req.body.email)
+  //console.log(req.body.username, req.body.email)
 
   if ([email, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
@@ -104,17 +106,21 @@ export const loginUser = asyncHandler(async (req, res) => {
   email = email?.toLowerCase();
 
   // Debugging: Print input values
-  console.log("Login Attempt:", { username, email });
+  //console.log("Login Attempt:", { username, email });
 
   // 1. Check if user exists
   const user = await User.findOne({
     $or: [{ email }, { username }]
   });
 
-  console.log("Found User:", user); // Debugging
+  //console.log("Found User:", user); // Debugging
 
   if (!user) {
     throw new ApiError(400, "Invalid email or username");
+  }
+
+  if (!user.isVerified) {
+    throw new ApiError(403, 'Please verify your email before logging in')
   }
 
   // 2. Validate password
@@ -153,7 +159,6 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 
-//logoutUser 
 
 
 export const logoutUser = asyncHandler(async (req, res) => {

@@ -6,9 +6,10 @@ import dotenv from "dotenv";
 dotenv.config();
 export const protectRoute = asyncHandler(async (req, res, next) => {
   const token = req.cookies?.refreshToken;
-  console.log('cookie:', req.cookies)
-  console.log('Token:', token)
-  console.log('secret: ', process.env.JWT_SECRET)
+  //console.log("Authenticated User in Middleware:", req.user);
+  //console.log('cookie:', req.cookies)              Debugging
+  //console.log('Token:', token)
+  //console.log('secret: ', process.env.JWT_SECRET)
   if (!token) {
     throw new ApiError(401, "Unauthorized - No Token Provided");
   }
