@@ -25,24 +25,32 @@ export const generateTokens = (userId) => {
 };
 
 
+// Before running any of these Functions, A middleware called protectRoute will run in user.routes.js for security purposes 
+
+
 export const registerUser = asyncHandler(async (req, res) => {
   let { email, username, password } = req.body;
 
+  // Check if all fields are filled
   if ([email, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
+  // Transform variables to Lowercase for no errors
   username = username?.toLowerCase();
   email = email?.toLowerCase();
 
-  if(!validator.isEmail(email)){
+  // Check if email in correct format
+  if (!validator.isEmail(email)) {
     throw new ApiError(401, 'Invalid email format')
   }
 
+  // Check if password contains atleast 8 characters
   if (password.length < 8) {
     throw new ApiError(400, "Password must be at least 8 characters");
   }
 
+  // Check for existed user
   const existedUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists");
@@ -54,7 +62,9 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is required");
   }
 
+  // Upload avatar to cloudinary & failsafe avatar
   const avatar = await uploadOnCloudinary(avatarImageLocalPath);
+  console.log(avatar);
   if (!avatar) {
     throw new ApiError(400, "Avatar upload failed");
   }
@@ -62,7 +72,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   // 🔹 Hash the password
   const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds = 10
 
-  // 🔹 Save the user with the hashed password
+  // 🔹 Save the user with the hashed password, avatar url, email, password, username
   const user = await User.create({
     avatar: avatar.url,
     email,
@@ -70,6 +80,9 @@ export const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
   });
 
+  // Generate accessToken and refreshToken
+  // refreshToken = longTerm
+  // accessToken = shortTerm
   const { accessToken, refreshToken } = generateTokens(user._id);
 
   // Store refresh token in HTTP-only cookie
@@ -80,7 +93,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
-  // 🔹 Exclude password in the response
+  // 🔹 Return accessToken, User object exclude password for security
   res.status(201).json(new ApiResponse(201, {
     accessToken,
     user: {
@@ -92,11 +105,12 @@ export const registerUser = asyncHandler(async (req, res) => {
   }, "User registered successfully"));
 });
 
-//LoginUser
+// LoginUser
 export const loginUser = asyncHandler(async (req, res) => {
   let { username, email, password } = req.body;
-  //console.log(req.body.username, req.body.email)
+  //console.log(req.body.username, req.body.email) // Debug
 
+  // Check if required fields are filled
   if ([email, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
@@ -115,13 +129,11 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   //console.log("Found User:", user); // Debugging
 
+  // Check for User existence
   if (!user) {
     throw new ApiError(400, "Invalid email or username");
   }
 
-  if (!user.isVerified) {
-    throw new ApiError(403, 'Please verify your email before logging in')
-  }
 
   // 2. Validate password
   const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -129,6 +141,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid credentials");
   }
 
+  // Generate accessToken, refreshToken
   const { accessToken, refreshToken } = generateTokens(user._id);
 
   // Set refresh token as HTTP-only cookie
@@ -147,7 +160,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     maxAge: 15 * 60 * 1000, // Shorter lifespan (15 mins)
   });
 
-  // Send response
+  // Return User.object as response
   res.status(200).json({
     user: {
       _id: user._id,
@@ -160,8 +173,9 @@ export const loginUser = asyncHandler(async (req, res) => {
 
 
 
-
+// Logout
 export const logoutUser = asyncHandler(async (req, res) => {
+  // Clears refreshToken which logouts user
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

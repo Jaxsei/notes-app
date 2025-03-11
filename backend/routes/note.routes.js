@@ -6,6 +6,7 @@ import { upload } from "../middlewares/multer.middleware.js";
 
 const router = express.Router();
 
+// Note Routes 
 router.post('/', protectRoute, noteLimiter, upload.none(), createNote);
 router.get('/', protectRoute, getNotesLimiter, upload.none(), getNotes);
 router.put('/:id', protectRoute, noteLimiter, upload.none(), updateNote);

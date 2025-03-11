@@ -5,7 +5,6 @@ import { RateLimiter } from "../utils/RateLimiter.js";
 
 const router = express.Router();
 
-
 // AUTH ROUTES
 router.post("/register", RateLimiter, upload.single('avatar'), registerUser);
 router.post("/login", RateLimiter, upload.none(), loginUser);
