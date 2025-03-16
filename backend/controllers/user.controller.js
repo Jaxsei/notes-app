@@ -78,6 +78,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     email,
     password: hashedPassword,
     username: username.toLowerCase(),
+    isVerified: false
   });
 
   // Generate accessToken and refreshToken
@@ -101,6 +102,7 @@ export const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       avatar: user.avatar,
       username: user.username,
+      isVerified: user.isVerified
     }
   }, "User registered successfully"));
 });
