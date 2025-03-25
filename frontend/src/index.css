@@ -15,9 +15,6 @@ body {
 #root {
   min-height: 100vh;
   /* Ensure it takes full height */
-  display: flex;
-  justify-content: center;
-  align-items: center;
   overflow: auto;
   /* Enable scrolling if content overflows */
   padding: 2rem;
