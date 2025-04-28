@@ -7,8 +7,12 @@ import { resendEmail } from "../utils/resendEmails.js";
 
 export const sendOtp = asyncHandler(async (req, res) => {
 
-  const data = JSON.parse(JSON.stringify(req.body));
-  const email = data.email?.email || data.email; // Handle nested email case
+  const { email } = req.body;
+  // console.log(email);
+
+  if (!email || typeof email !== "string") {
+    throw new ApiError(400, "A valid email is required");
+  }
   //const user = await User.findById(req.user.id);
   //if (!user) {
   //  throw new ApiError(404, "User not found");
