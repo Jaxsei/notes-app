@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NuxtakeUI from "../components/logos/nuxtakeUI";
 import { ModeToggle } from "../components/mode-toggle";
+
 export default function NotesApp() {
   const logo = <NuxtakeUI className='w-12 h-12' />
   return (
@@ -17,7 +18,7 @@ export default function NotesApp() {
       <div className="mx-auto max-w-truexl">
         {/* Header */}
 
-        <header className="mb-16 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <header className="mb-[6rem] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* Logo + Title group */}
           <div className="flex items-center gap-2">
             {logo}
@@ -68,7 +69,7 @@ export default function NotesApp() {
         </div>
 
         {/* Notes Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {[
             { title: "The beginning of prototyping is the most important part", date: '2025-04-28', stared: true },
             { title: "13 Things You Should Give Up If You Want to Be a Successful UX Designer", date: '2025-04-28', stared: true },
@@ -77,7 +78,7 @@ export default function NotesApp() {
             { title: "52 Research Terms you need to know as a UX Designer", date: '2025-04-28', stared: true },
             { title: "Text fields & Forms design — UI components series", date: '2025-04-28', stared: true },
           ].map((note, index) => (
-            <Card key={index} className="flex flex-col justify-between h-[220px] bg-muted">
+            <Card key={index} className="flex flex-col justify-between h-[240px] bg-muted">
               <CardHeader className="p-4">
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-2xl font-bold leading-tight line-clamp-3">

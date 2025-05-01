@@ -7,12 +7,13 @@ import { ThemeProvider } from "./components/theme-provider";
 import Navbar from "./components/sections/navbar/default.tsx";
 import HomePage from "./components/home-page.tsx";
 import NotesPage from "./components/notes-page.tsx";
+import SettingsPage from "./components/settings.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>  {/* ✅ Wrap with BrowserRouter */}
       <ThemeProvider defaultTheme="light" storageKey="theme">
-        <NotesPage />
+        <SettingsPage />
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
