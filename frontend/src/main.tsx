@@ -1,19 +1,20 @@
 import React from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";  // ✅ Add BrowserRouter
+import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider";
-import Navbar from "./components/sections/navbar/default.tsx";
-import HomePage from "./components/home-page.tsx";
-import NotesPage from "./components/notes-page.tsx";
+import { AnimatedWrapper } from "./components/AnimatedWrapper.tsx";
 import SettingsPage from "./components/settings.tsx";
+import NoteEditor from "./components/notes-editor.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>  {/* ✅ Wrap with BrowserRouter */}
+    <BrowserRouter>
       <ThemeProvider defaultTheme="light" storageKey="theme">
-        <SettingsPage />
+        <AnimatedWrapper>
+          <NoteEditor />
+        </AnimatedWrapper>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
