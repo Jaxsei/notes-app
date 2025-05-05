@@ -57,13 +57,12 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 
   // Handle avatar upload
-  const avatarImageLocalPath = req.file?.path;
-  if (!avatarImageLocalPath) {
+  const fileBuffer = req.file?.buffer;
+  if (!fileBuffer) {
     throw new ApiError(400, "Avatar file is required");
   }
 
-  // Upload avatar to cloudinary & failsafe avatar
-  const avatar = await uploadOnCloudinary(avatarImageLocalPath);
+  const avatar = await uploadOnCloudinary(fileBuffer, req.body?.username); // Upload avatar to cloudinary & failsafe avatar
   console.log(avatar);
   if (!avatar) {
     throw new ApiError(400, "Avatar upload failed");

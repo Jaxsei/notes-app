@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
-import fs from 'fs'
-
+import { Readable } from 'stream';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -8,24 +7,20 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
-  try {
-    if (!localFilePath) return null
+export const uploadOnCloudinary = (fileBuffer, filename = 'avatar') => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'auto',
+        public_id: `avatars/${filename}`,
+        folder: 'avatars'
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
 
-    //upload file on cloudinary
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: 'auto'
-    })
-
-    // file uploađed successfully
-    console.log('file uploaded successfully', response.url)
-
-    return response;
-  } catch (error) {
-    fs.unlinkSync(localFilePath) // removes the tempo saved file after failed operation
-    return null;
-  }
-}
-
-
-export { uploadOnCloudinary }
+    Readable.from(fileBuffer).pipe(stream);
+  });
+};
