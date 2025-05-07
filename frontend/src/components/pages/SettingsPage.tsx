@@ -10,9 +10,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { useTheme } from "./theme-provider"
+import { useTheme } from "../utils/theme-provider"
 import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover"
-import { CustomAvatar } from "./ui/custom-avatar"
+import { CustomAvatar } from "../ui/custom-avatar"
 
 export default function SettingsPage() {
   const [userName, setUserName] = useState('' || 'John Doe')

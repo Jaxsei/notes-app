@@ -8,10 +8,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import NuxtakeUI from "../components/logos/nuxtakeUI";
-import { ModeToggle } from "../components/mode-toggle";
+import NuxtakeUI from "../logos/nuxtakeUI";
+import { ModeToggle } from "../utils/mode-toggle";
 
-export default function NotesApp() {
+export default function NotesPage() {
   const logo = <NuxtakeUI className='w-12 h-12' />
   return (
     <div className="min-h-screen bg-background">

@@ -13,11 +13,11 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuthStore } from "../components/store/useAuthStore.js"
+import { useAuthStore } from "../store/useAuthStore.js"
 import toast from "react-hot-toast"
 import { Loader2, Eye, EyeOff } from "lucide-react"
 
-export function LoginForm({
+export function LoginPage({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {

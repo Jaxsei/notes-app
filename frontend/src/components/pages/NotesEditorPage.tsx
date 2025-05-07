@@ -5,9 +5,9 @@ import { ArrowLeft, Share2, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { format } from 'date-fns'
-import { ModeToggle } from "./mode-toggle"
+import { ModeToggle } from "../utils/mode-toggle"
 
-export default function NoteEditor() {
+export default function NoteEditorPage() {
   const [noteTitle, setNoteTitle] = useState("Heading")
   const [noteContent, setNoteContent] = useState("")
 

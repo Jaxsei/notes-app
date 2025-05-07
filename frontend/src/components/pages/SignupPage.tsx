@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuthStore } from '../components/store/useAuthStore.js'
+import { useAuthStore } from '../store/useAuthStore.js'
 import toast from "react-hot-toast"
 
-export function SignupForm({
+export function SignupPage({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
@@ -59,10 +59,6 @@ export function SignupForm({
       form.append("email", formData.email)
       form.append("password", formData.password)
       if (formData.avatar) {
-        const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-        if (!allowedTypes.includes(formData.avatar.type)) {
-          return toast.error("Only .png, .jpeg, and .jpg files are allowed");
-        }
         form.append("avatar", formData.avatar);
       } await signup(form)
     }
