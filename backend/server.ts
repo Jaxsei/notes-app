@@ -1,5 +1,6 @@
-import connectDB from "./db/index.js";
-import { app } from "./app.js";
+import connectDB from "./db/index.ts";
+import { app } from "./app.ts";
+
 
 connectDB()
   .then(() => {

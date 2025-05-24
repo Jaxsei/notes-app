@@ -1,42 +1,40 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import dotenv from "dotenv";
-dotenv.config();
+import { Request, Response, NextFunction } from "express";
 
-// Security Middleware
-export const protectRoute = asyncHandler(async (req, res, next) => {
+// Define custom type for Request with user
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
+
+// Middleware to protect routes
+export const protectRoute = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const token = req.cookies?.refreshToken;
-  //console.log("Authenticated User in Middleware:", req.user);
-  //console.log('cookie:', req.cookies)              Debugging
-  //console.log('Token:', token)
-  //console.log('secret: ', process.env.JWT_SECRET)
 
-  // Failsafe Token
   if (!token) {
     throw new ApiError(401, "Unauthorized - No Token Provided");
   }
 
-  try {
-    // Verify Token with a secret code
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error("❌ JWT_SECRET not defined in environment variables.");
+    throw new ApiError(500, "Internal Server Error");
+  }
 
-    // Find User by Id but exclude password
+  try {
+    const decoded = jwt.verify(token, secret) as JwtPayload;
+
     const user = await User.findById(decoded.userId).select("-password");
 
-    // Failsafe user
     if (!user) {
       throw new ApiError(401, "Unauthorized - User not found");
     }
 
-    // Store user in req
     req.user = user;
-
-    // Pass to next function
     next();
-  } catch (error) {
-    // Catch Errors
+  } catch (error: any) {
     if (error.name === "TokenExpiredError") {
       throw new ApiError(401, "Unauthorized - Token Expired");
     }

@@ -1,8 +1,8 @@
 import express from 'express';
-import { createNote, getNotes, updateNote, deleteNote } from '../controllers/note.controller.js';
-import { protectRoute } from '../middlewares/auth.middelware.js';
-import { noteLimiter, getNotesLimiter } from '../utils/NotesRateLimiter.js';
-import { upload } from "../middlewares/multer.middleware.js";
+import { createNote, getNotes, updateNote, deleteNote } from '../controllers/note.controller';
+import { protectRoute } from '../middlewares/auth.middelware';
+import { noteLimiter, getNotesLimiter } from '../utils/NotesRateLimiter';
+import { upload } from "../middlewares/multer.middleware";
 
 const router = express.Router();
 
