@@ -10,7 +10,7 @@ import { Request, Response } from 'express';
 import { StatusCode } from "../utils/StatusCode";
 
 // Generate Access & Refresh Tokens
-export const generateTokens = (userId: string) => {
+export const generateTokens = (userId) => {
   const accessToken = jwt.sign(
     { userId },
     process.env.JWT_SECRET || 'athanasia',

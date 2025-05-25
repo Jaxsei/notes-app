@@ -1,8 +1,9 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { User } from "../models/user.model.js";
-import { ApiError } from "../utils/ApiError.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { User } from "../models/user.model";
+import { ApiError } from "../utils/ApiError";
+import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response, NextFunction } from "express";
+import { StatusCode } from "../utils/StatusCode";
 
 // Define custom type for Request with user
 interface AuthenticatedRequest extends Request {
@@ -14,13 +15,13 @@ export const protectRoute = asyncHandler(async (req: AuthenticatedRequest, res: 
   const token = req.cookies?.refreshToken;
 
   if (!token) {
-    throw new ApiError(401, "Unauthorized - No Token Provided");
+    throw new ApiError(StatusCode.BAD_REQUEST, "Unauthorized - No Token Provided");
   }
 
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     console.error("❌ JWT_SECRET not defined in environment variables.");
-    throw new ApiError(500, "Internal Server Error");
+    throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Internal Server Error");
   }
 
   try {
@@ -29,15 +30,15 @@ export const protectRoute = asyncHandler(async (req: AuthenticatedRequest, res: 
     const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
-      throw new ApiError(401, "Unauthorized - User not found");
+      throw new ApiError(StatusCode.BAD_REQUEST, "Unauthorized - User not found");
     }
 
     req.user = user;
     next();
   } catch (error: any) {
     if (error.name === "TokenExpiredError") {
-      throw new ApiError(401, "Unauthorized - Token Expired");
+      throw new ApiError(StatusCode.BAD_REQUEST, "Unauthorized - Token Expired");
     }
-    throw new ApiError(401, "Unauthorized - Invalid Token");
+    throw new ApiError(StatusCode.BAD_REQUEST, "Unauthorized - Invalid Token");
   }
 });
