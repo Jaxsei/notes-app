@@ -109,8 +109,8 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/nuxtake.git
-   cd nuxtake
+   git clone https://github.com/Jaxsei/notes-app.git
+   cd notes-app
    ```
 
 2. **Install dependencies**
@@ -130,34 +130,20 @@ Before you begin, ensure you have the following installed:
    
    **Backend `.env`:**
    ```env
-   NODE_ENV=development
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/nuxtake
-   JWT_SECRET=your_super_secret_jwt_key_here
-   JWT_EXPIRE=7d
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_USER=your-email@gmail.com
-   EMAIL_PASS=your-app-password
-   CORS_ORIGIN=http://localhost:3000
+   ACCESS_TOKEN_EXPIRY=
+REFRESH_TOKEN_EXPIRY=
+NODE_ENV=
+MONGODB_URI=
+JWT_SECRET=
+CORS_ORIGIN=
+PORT=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+EMAIL_USER=
+EMAIL_APP=
    ```
-   
-   **Frontend `.env`:**
-   ```env
-   VITE_API_URL=http://localhost:5000/api
-   VITE_APP_NAME=Nuxtake
-   VITE_APP_VERSION=1.0.0
-   ```
-
-4. **Database Setup**
-   ```bash
-   # Start MongoDB (if running locally)
-   mongod
-   
-   # The application will automatically create required collections
-   ```
-
-5. **Start the development servers**
+4. **Start the development servers**
    ```bash
    # Start backend server (from backend directory)
    cd backend
@@ -173,46 +159,6 @@ Before you begin, ensure you have the following installed:
 6. **Access the application**
    - **Frontend**: `http://localhost:3000`
    - **Backend API**: `http://localhost:5000`
-   - **API Documentation**: `http://localhost:5000/api-docs` (if implemented)
-
----
-
-## 📁 Project Structure
-
-```
-nuxtake/
-├── 📂 frontend/
-│   ├── 📂 public/              # Static assets
-│   ├── 📂 src/
-│   │   ├── 📂 components/
-│   │   │   ├── 📂 ui/          # Shadcn UI components
-│   │   │   ├── 📂 auth/        # Authentication components
-│   │   │   ├── 📂 notes/       # Note-related components
-│   │   │   ├── 📂 layout/      # Layout components
-│   │   │   └── 📂 common/      # Reusable components
-│   │   ├── 📂 pages/           # Route/page components
-│   │   ├── 📂 hooks/           # Custom React hooks
-│   │   ├── 📂 store/           # Zustand stores
-│   │   ├── 📂 utils/           # Helper functions
-│   │   ├── 📂 lib/             # External library configurations
-│   │   └── 📂 styles/          # Global styles and Tailwind config
-│   ├── 📄 package.json
-│   ├── 📄 vite.config.js
-│   └── 📄 tailwind.config.js
-├── 📂 backend/
-│   ├── 📂 src/
-│   │   ├── 📂 controllers/     # Route controllers and business logic
-│   │   ├── 📂 models/          # Database models and schemas
-│   │   ├── 📂 routes/          # API route definitions
-│   │   ├── 📂 middleware/      # Custom middleware (auth, validation, etc.)
-│   │   ├── 📂 utils/           # Helper functions and utilities
-│   │   ├── 📂 config/          # Configuration files
-│   │   └── 📂 services/        # External service integrations
-│   ├── 📄 package.json
-│   └── 📄 server.js
-├── 📄 README.md
-└── 📄 .gitignore
-```
 
 ---
 
@@ -222,29 +168,23 @@ nuxtake/
 - `POST /api/auth/register` - User registration with email verification
 - `POST /api/auth/login` - User login with JWT token generation
 - `POST /api/auth/logout` - Secure user logout
-- `GET /api/auth/verify/:token` - Email verification endpoint
+- `POST /api/auth/verifyotp` - Email verification endpoint
+- `POST /api/auth/sendotp` - Email sending endpoint
+// will be added later
+-----
 - `POST /api/auth/forgot-password` - Password reset request
 - `POST /api/auth/reset-password` - Password reset confirmation
-- `GET /api/auth/me` - Get current user information
+-----
+- `GET /api/auth/checkauth` - Get current user information
 
 ### 📝 Notes Management
-- `GET /api/notes` - Retrieve all user notes with pagination
-- `POST /api/notes` - Create new note
-- `GET /api/notes/:id` - Get specific note by ID
-- `PUT /api/notes/:id` - Update existing note
-- `DELETE /api/notes/:id` - Delete note
-- `POST /api/notes/:id/share` - Generate shareable link
-- `GET /api/notes/shared/:shareId` - Access shared note
-
-### 👤 User Profile
-- `GET /api/user/profile` - Get user profile information
-- `PUT /api/user/profile` - Update user profile
-- `POST /api/user/upload-avatar` - Upload profile picture
-- `DELETE /api/user/avatar` - Remove profile picture
+- `GET /api/notes/get` - Retrieve all user notes
+- `POST /api/notes/create` - Create new note
+- `GET /api/notes/get/:id` - Get specific note by ID
+- `PUT /api/notes/update/:id` - Update existing note
+- `DELETE /api/notes/delete/:id` - Delete note
 
 ---
-
-## 🚀 Deployment
 
 ### 🏗️ Production Build
 
@@ -262,51 +202,11 @@ nuxtake/
    # Install only production dependencies
    ```
 
-### 🌐 Deployment Options
 
-#### **Option 1: Traditional VPS/Server**
-```bash
-# On your server
-git clone https://github.com/yourusername/nuxtake.git
-cd nuxtake
-
-# Setup environment variables
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-# Edit .env files with production values
-
-# Build and start
-cd frontend && npm run build
-cd ../backend && npm start
-```
-
-#### **Option 2: Docker Deployment**
-```dockerfile
-# Example Dockerfile for backend
-FROM node:16-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --production
-COPY . .
-EXPOSE 5000
-CMD ["npm", "start"]
-```
-
-#### **Option 3: Platform-as-a-Service**
+#### **Platform-as-a-Service**
 - **Frontend**: Deploy to Vercel, Netlify, or Surge
 - **Backend**: Deploy to Heroku, Railway, or DigitalOcean App Platform
 - **Database**: Use MongoDB Atlas for managed database
-
-### 🔧 Production Environment Variables
-
-**Critical production settings:**
-```env
-NODE_ENV=production
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nuxtake
-JWT_SECRET=your_extremely_secure_production_secret
-CORS_ORIGIN=https://your-frontend-domain.com
-EMAIL_HOST=your-production-smtp-host
-```
 
 ### 🔒 Security Checklist
 
@@ -326,7 +226,7 @@ EMAIL_HOST=your-production-smtp-host
 - [x] User authentication system with email verification
 - [x] Full CRUD operations for notes
 - [x] Profile picture upload and management
-- [x] Responsive design across all devices
+- [x] Responsive design across all devices (not yet)
 - [x] Export functionality for notes
 - [x] Secure JWT-based authentication
 
@@ -335,13 +235,7 @@ EMAIL_HOST=your-production-smtp-host
 - [ ] **Advanced Text Formatting** - Rich text editor with more options
 - [ ] **Note Categories & Tags** - Better organization system
 
-### 🎯 Planned Features
-- [ ] **Mobile Application** - React Native companion app
-- [ ] **Offline Support** - Progressive Web App capabilities
-- [ ] **Advanced Sharing** - Granular permission controls
-- [ ] **Note Templates** - Pre-designed note formats
-- [ ] **Search & Filtering** - Advanced search capabilities
-- [ ] **Dark Mode** - Complete dark theme support
+### 🎯 Planned Feature
 - [ ] **Markdown Support** - Native markdown editing
 - [ ] **File Attachments** - Image and document uploads
 
@@ -354,7 +248,7 @@ We welcome contributions from developers of all skill levels! Here's how you can
 ### 🛠️ Development Setup
 
 1. **Fork and clone the repository**
-2. **Follow the installation steps above**
+2. **Follow the installation steps below**
 3. **Create a feature branch**
    ```bash
    git checkout -b feature/amazing-new-feature
@@ -374,53 +268,6 @@ We welcome contributions from developers of all skill levels! Here's how you can
 - **Documentation**: Update README and inline documentation as needed
 - **Responsive Design**: Ensure all changes work across different screen sizes
 
-### 🐛 Bug Reports
-
-When reporting bugs, please include:
-- Clear description of the issue
-- Steps to reproduce
-- Expected vs actual behavior
-- Screenshots if applicable
-- Environment details (OS, browser, Node version)
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for complete details.
-
----
-
-## 👨‍💻 Author & Support
-
-**Created with ❤️ by [Your Name]**
-
-- 🐙 **GitHub**: [@yourusername](https://github.com/yourusername)
-- 💼 **LinkedIn**: [Your Profile](https://linkedin.com/in/yourprofile)  
-- 📧 **Email**: your.email@example.com
-- 🌐 **Website**: [yourwebsite.com](https://yourwebsite.com)
-
-### 💬 Get Help
-
-- 📖 **Documentation**: Check this README and inline code comments
-- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/nuxtake/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/nuxtake/discussions)
-- 📧 **Email Support**: support@nuxtake.com
-
----
-
-## 🙏 Acknowledgments
-
-Special thanks to these amazing projects and communities:
-
-- **[Shadcn UI](https://ui.shadcn.com/)** - For the beautiful, accessible component library
-- **[Framer Motion](https://www.framer.com/motion/)** - For smooth, performant animations
-- **[Tailwind CSS](https://tailwindcss.com/)** - For utility-first CSS framework
-- **[React](https://reactjs.org/)** - For the powerful frontend library
-- **[Express.js](https://expressjs.com/)** - For the minimal, flexible backend framework
-
----
-
 <div align="center">
 
 ### 🌟 Show Your Support
@@ -428,14 +275,13 @@ Special thanks to these amazing projects and communities:
 If you find Nuxtake helpful, please consider:
 
 ⭐ **Starring this repository**  
-🐦 **Sharing on social media**  
 🤝 **Contributing to the project**  
-☕ **[Buy me a coffee](https://buymeacoffee.com/yourusername)**
 
 **[⬆ Back to Top](#-nuxtake)**
 
 ---
 
 *Made with ❤️, ☕, and countless hours of coding*
+*AIs used: ChatGPT for help in debugging and Claude for ui design*
 
 </div>
