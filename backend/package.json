@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "backend for nuxtake",
   "main": "server.ts",
-  "scripts": {
-    "dev": "nodemon",
-    "drop": "ts-node utils/scripts/dropCollection.ts"
-  },
+"scripts": {
+  "dev": "nodemon server.ts",
+  "build": "tsc",
+  "start": "node dist/server.js",
+  "drop": "ts-node utils/scripts/dropCollection.ts"
+},
   "author": "jaxsei",
   "license": "ISC",
   "dependencies": {
