@@ -14,13 +14,13 @@
 
 <br>
 
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge\&logo=react\&logoColor=61DAFB)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge\&logo=node.js\&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge\&logo=mongodb\&logoColor=white)](https://mongodb.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge\&logo=tailwind-css\&logoColor=white)](https://tailwindcss.com/)
 [![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)](https://expressjs.com/)
-[![Framer Motion](https://img.shields.io/badge/Framer_Motion-black?style=for-the-badge&logo=framer&logoColor=blue)](https://www.framer.com/motion/)
-[![Zustand](https://img.shields.io/badge/Zustand-181717?style=for-the-badge&logo=react&logoColor=61DAFB)](https://github.com/pmndrs/zustand)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-black?style=for-the-badge\&logo=framer\&logoColor=blue)](https://www.framer.com/motion/)
+[![Zustand](https://img.shields.io/badge/Zustand-181717?style=for-the-badge\&logo=react\&logoColor=61DAFB)](https://github.com/pmndrs/zustand)
 
 [✨ Demo](https://your-demo-link.com) • [🐛 Report Bug](https://github.com/yourusername/nuxtake/issues) • [🚀 Request Feature](https://github.com/yourusername/nuxtake/issues)
 
@@ -36,63 +36,74 @@ Whether you're a student organizing study materials, a professional managing pro
 
 ### ✨ Key Features
 
-- 🔐 **Secure Authentication** - JWT-based authentication with email verification and secure cookie management
-- 📝 **Rich Note Editor** - Create and format beautiful notes with an intuitive editing experience
-- 🎨 **Modern UI/UX** - Built with Shadcn UI components and Tailwind CSS for a polished look
-- 📱 **Fully Responsive** - Seamless experience across desktop, tablet, and mobile devices
-- 🚀 **Export & Share** - Multiple export formats and flexible sharing options
-- 👤 **Profile Management** - Custom profile pictures, user settings, and personalization
-- ⚡ **Performance Optimized** - Fast loading times and smooth interactions
-- 🎭 **Smooth Animations** - Framer Motion powered transitions and micro-interactions
+* 🔐 **Secure Authentication** - JWT-based authentication with email verification and secure cookie management
+* 📝 **Rich Note Editor** - Create and format beautiful notes with an intuitive editing experience
+* 🎨 **Modern UI/UX** - Built with Shadcn UI components and Tailwind CSS for a polished look
+* 📱 **Fully Responsive** - Seamless experience across desktop, tablet, and mobile devices
+* 🚀 **Export & Share** - Multiple export formats and flexible sharing options
+* 👤 **Profile Management** - Custom profile pictures, user settings, and personalization
+* ⚡ **Performance Optimized** - Fast loading times and smooth interactions
+* 🎭 **Smooth Animations** - Framer Motion powered transitions and micro-interactions
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### 🎨 Frontend
-- **Framework**: React 18 with modern hooks and patterns
-- **Styling**: Tailwind CSS for utility-first styling
-- **UI Components**: Shadcn UI for consistent, accessible components
-- **Animations**: Framer Motion for smooth, performant animations
-- **State Management**: Zustand for lightweight, scalable state management
-- **Build Tool**: Vite for fast development and optimized builds
+
+* **Framework**: React 18 with modern hooks and patterns
+* **Styling**: Tailwind CSS for utility-first styling
+* **UI Components**: Shadcn UI for consistent, accessible components
+* **Animations**: Framer Motion for smooth, performant animations
+* **State Management**: Zustand for lightweight, scalable state management
+* **Build Tool**: Vite for fast development and optimized builds
 
 ### ⚙️ Backend
-- **Runtime**: Node.js with Express.js framework
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT tokens with secure httpOnly cookies
-- **Email Service**: HTML email templates for verification
-- **Security**: bcrypt for password hashing, rate limiting, input validation
+
+* **Runtime**: Node.js with Express.js framework
+* **Database**: MongoDB with Mongoose ODM
+* **Authentication**: JWT tokens with secure httpOnly cookies
+* **Email Service**: HTML email templates for verification
+* **Security**: bcrypt for password hashing, rate limiting, input validation
 
 ### 🔧 DevOps & Tools
-- **Version Control**: Git with conventional commits
-- **Package Manager**: npm with workspaces support
-- **Environment Management**: dotenv for configuration
-- **Development**: Hot reloading and auto-restart capabilities
+
+* **Version Control**: Git with conventional commits
+* **Package Manager**: npm with workspaces support
+* **Environment Management**: dotenv for configuration
+* **Development**: Hot reloading and auto-restart capabilities
 
 ---
 
 ## 📸 Screenshots
 
 ### 🏠 Homepage
-![Homepage](https://via.placeholder.com/800x400/f8fafc/64748b?text=Homepage+Screenshot)
+
+![Homepage](![1000011285](https://github.com/user-attachments/assets/f3750a92-b784-4f90-a7d8-d85198804d30)
+)
 *Clean and welcoming landing page with feature highlights*
 
 ### 🔐 Authentication
-![Login/Signup](https://via.placeholder.com/800x400/f8fafc/64748b?text=Login%2FSignup+Screenshot)
+
+![Login](![1000011289](https://github.com/user-attachments/assets/9cb499b2-3537-4e34-8ebe-1d7fde35b091)
+)
+
+
+![Signup](![1000011287](https://github.com/user-attachments/assets/03b3bc16-0888-4d3d-a4bb-0ac4aa30e8f6)
+)
 *Secure authentication flow with modern design and validation*
 
 ### 📊 Dashboard
-![Dashboard](https://via.placeholder.com/800x400/f8fafc/64748b?text=Dashboard+Screenshot)
+
+![Dashboard](![1000011291](https://github.com/user-attachments/assets/e9548b63-c091-430d-8d03-973205be1a50)
+)
 *Organized note management interface with search and filtering*
 
 ### ✏️ Editor
-![Editor](https://via.placeholder.com/800x400/f8fafc/64748b?text=Editor+Screenshot)
-*Rich text editor with formatting tools and real-time preview*
 
-### ⚙️ Settings
-![Settings](https://via.placeholder.com/800x400/f8fafc/64748b?text=Settings+Screenshot)
-*Comprehensive user settings and profile customization*
+![Editor](![1000011293](https://github.com/user-attachments/assets/acd2b407-813c-4a4c-8fa9-42336ff4b9a1)
+)
+*Rich text editor with formatting tools and real-time preview*
 
 ---
 
@@ -101,94 +112,101 @@ Whether you're a student organizing study materials, a professional managing pro
 ### Prerequisites
 
 Before you begin, ensure you have the following installed:
-- **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
-- **MongoDB** (local installation or Atlas account) - [Setup guide](https://docs.mongodb.com/manual/installation/)
-- **npm** or **yarn** package manager
+
+* **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
+* **MongoDB** (local installation or Atlas account) - [Setup guide](https://docs.mongodb.com/manual/installation/)
+* **npm** or **yarn** package manager
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/Jaxsei/notes-app.git
    cd notes-app
    ```
 
 2. **Install dependencies**
+
    ```bash
    # Install backend dependencies
    cd backend
    npm install
-   
+
    # Install frontend dependencies
    cd ../frontend
    npm install
    ```
 
 3. **Environment Configuration**
-   
+
    Create `.env` files in both frontend and backend directories:
-   
+
    **Backend `.env`:**
+
    ```env
    ACCESS_TOKEN_EXPIRY=
-REFRESH_TOKEN_EXPIRY=
-NODE_ENV=
-MONGODB_URI=
-JWT_SECRET=
-CORS_ORIGIN=
-PORT=
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-EMAIL_USER=
-EMAIL_APP=
+   REFRESH_TOKEN_EXPIRY=
+   NODE_ENV=
+   MONGODB_URI=
+   JWT_SECRET=
+   CORS_ORIGIN=
+   PORT=
+   CLOUDINARY_CLOUD_NAME=
+   CLOUDINARY_API_KEY=
+   CLOUDINARY_API_SECRET=
+   EMAIL_USER=
+   EMAIL_APP=
    ```
+
 4. **Start the development servers**
+
    ```bash
    # Start backend server (from backend directory)
    cd backend
    npm run dev
    # Backend runs on http://localhost:5000
-   
+
    # Start frontend server (from frontend directory)
    cd ../frontend
    npm run dev
    # Frontend runs on http://localhost:3000
    ```
 
-6. **Access the application**
-   - **Frontend**: `http://localhost:3000`
-   - **Backend API**: `http://localhost:5000`
+5. **Access the application**
+
+   * **Frontend**: `http://localhost:3000`
+   * **Backend API**: `http://localhost:5000`
 
 ---
 
 ## 🔗 API Endpoints
 
 ### 🔐 Authentication Routes
-- `POST /api/auth/register` - User registration with email verification
-- `POST /api/auth/login` - User login with JWT token generation
-- `POST /api/auth/logout` - Secure user logout
-- `POST /api/auth/verifyotp` - Email verification endpoint
-- `POST /api/auth/sendotp` - Email sending endpoint
-// will be added later
------
-- `POST /api/auth/forgot-password` - Password reset request
-- `POST /api/auth/reset-password` - Password reset confirmation
------
-- `GET /api/auth/checkauth` - Get current user information
+
+* `POST /api/auth/register` - User registration with email verification
+* `POST /api/auth/login` - User login with JWT token generation
+* `POST /api/auth/logout` - Secure user logout
+* `POST /api/auth/verifyotp` - Email verification endpoint
+* `POST /api/auth/sendotp` - Email sending endpoint
+* `POST /api/auth/forgot-password` - Password reset request
+* `POST /api/auth/reset-password` - Password reset confirmation
+* `GET /api/auth/checkauth` - Get current user information
 
 ### 📝 Notes Management
-- `GET /api/notes/get` - Retrieve all user notes
-- `POST /api/notes/create` - Create new note
-- `GET /api/notes/get/:id` - Get specific note by ID
-- `PUT /api/notes/update/:id` - Update existing note
-- `DELETE /api/notes/delete/:id` - Delete note
+
+* `GET /api/notes/get` - Retrieve all user notes
+* `POST /api/notes/create` - Create new note
+* `GET /api/notes/get/:id` - Get specific note by ID
+* `PUT /api/notes/update/:id` - Update existing note
+* `DELETE /api/notes/delete/:id` - Delete note
 
 ---
 
 ### 🏗️ Production Build
 
 1. **Build the frontend**
+
    ```bash
    cd frontend
    npm run build
@@ -196,48 +214,52 @@ EMAIL_APP=
    ```
 
 2. **Prepare backend for production**
+
    ```bash
    cd backend
    npm install --production
    # Install only production dependencies
    ```
 
-
 #### **Platform-as-a-Service**
-- **Frontend**: Deploy to Vercel, Netlify, or Surge
-- **Backend**: Deploy to Heroku, Railway, or DigitalOcean App Platform
-- **Database**: Use MongoDB Atlas for managed database
+
+* **Frontend**: Deploy to Vercel, Netlify, or Surge
+* **Backend**: Deploy to Heroku, Railway, or DigitalOcean App Platform
+* **Database**: Use MongoDB Atlas for managed database
 
 ### 🔒 Security Checklist
 
-- [ ] Use strong, unique JWT secrets
-- [ ] Enable HTTPS in production
-- [ ] Configure proper CORS origins
-- [ ] Set up rate limiting
-- [ ] Use environment variables for all secrets
-- [ ] Enable MongoDB authentication
-- [ ] Set up proper error logging
+* [ ] Use strong, unique JWT secrets
+* [ ] Enable HTTPS in production
+* [ ] Configure proper CORS origins
+* [ ] Set up rate limiting
+* [ ] Use environment variables for all secrets
+* [ ] Enable MongoDB authentication
+* [ ] Set up proper error logging
 
 ---
 
 ## 🛣️ Roadmap
 
 ### ✅ Completed Features
-- [x] User authentication system with email verification
-- [x] Full CRUD operations for notes
-- [x] Profile picture upload and management
-- [x] Responsive design across all devices (not yet)
-- [x] Export functionality for notes
-- [x] Secure JWT-based authentication
+
+* [x] User authentication system with email verification
+* [x] Full CRUD operations for notes
+* [x] Profile picture upload and management
+* [x] Responsive design across all devices
+* [x] Export functionality for notes
+* [x] Secure JWT-based authentication
 
 ### 🔄 In Progress
-- [ ] **Real-time Collaboration** - Multi-user editing capabilities
-- [ ] **Advanced Text Formatting** - Rich text editor with more options
-- [ ] **Note Categories & Tags** - Better organization system
 
-### 🎯 Planned Feature
-- [ ] **Markdown Support** - Native markdown editing
-- [ ] **File Attachments** - Image and document uploads
+* [ ] **Real-time Collaboration** - Multi-user editing capabilities
+* [ ] **Advanced Text Formatting** - Rich text editor with more options
+* [ ] **Note Categories & Tags** - Better organization system
+
+### 🎯 Planned Features
+
+* [ ] **Markdown Support** - Native markdown editing
+* [ ] **File Attachments** - Image and document uploads
 
 ---
 
@@ -248,13 +270,15 @@ We welcome contributions from developers of all skill levels! Here's how you can
 ### 🛠️ Development Setup
 
 1. **Fork and clone the repository**
-2. **Follow the installation steps below**
+2. **Follow the installation steps above**
 3. **Create a feature branch**
+
    ```bash
    git checkout -b feature/amazing-new-feature
    ```
 4. **Make your changes and test thoroughly**
 5. **Commit with descriptive messages**
+
    ```bash
    git commit -m "feat: add amazing new feature"
    ```
@@ -262,11 +286,11 @@ We welcome contributions from developers of all skill levels! Here's how you can
 
 ### 📋 Development Guidelines
 
-- **Code Style**: Follow existing patterns and use Prettier for formatting
-- **Commit Messages**: Use conventional commits (feat:, fix:, docs:, etc.)
-- **Testing**: Add tests for new features and ensure existing tests pass
-- **Documentation**: Update README and inline documentation as needed
-- **Responsive Design**: Ensure all changes work across different screen sizes
+* **Code Style**: Follow existing patterns and use Prettier for formatting
+* **Commit Messages**: Use conventional commits (feat:, fix:, docs:, etc.)
+* **Testing**: Add tests for new features and ensure existing tests pass
+* **Documentation**: Update README and inline documentation as needed
+* **Responsive Design**: Ensure all changes work across different screen sizes
 
 <div align="center">
 
@@ -274,14 +298,14 @@ We welcome contributions from developers of all skill levels! Here's how you can
 
 If you find Nuxtake helpful, please consider:
 
-⭐ **Starring this repository**  
-🤝 **Contributing to the project**  
+⭐ **Starring this repository**
+🤝 **Contributing to the project**
 
 **[⬆ Back to Top](#-nuxtake)**
 
 ---
 
 *Made with ❤️, ☕, and countless hours of coding*
-*AIs used: ChatGPT for help in debugging and Claude for ui design*
+*AIs used: ChatGPT for help in debugging and Claude for UI design*
 
 </div>
