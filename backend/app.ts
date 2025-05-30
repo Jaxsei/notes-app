@@ -7,7 +7,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN,.
+  origin: process.env.CORS_ORIGIN,
   credentials: true,
   optionsSuccessStatus: 200
 }))
@@ -18,8 +18,8 @@ app.use(cookieParser());
 
 
 // Routes declaration
-import authRoutes from './routes/auth.routes.ts';
-import noteRoutes from './routes/note.routes.ts';
+import authRoutes from './routes/auth.routes';
+import noteRoutes from './routes/note.routes';
 
 app.use('/api/v1/auth', authRoutes);  // Keep auth under /api/v1/auth
 app.use('/api/v1/notes', noteRoutes);  // Notes should have a separate endpoint
