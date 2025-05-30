@@ -58,6 +58,7 @@ export const sendOtp = asyncHandler(async (req: AuthenticatedRequest, res: Respo
   await user.save();
 
   await resendEmail(email, otpCode);
+  console.log('Email otp sent successfully');
 
   res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, {}, "Email sent successfully"));
 });
@@ -89,7 +90,6 @@ export const verifyOtp = asyncHandler(async (req: AuthenticatedRequest, res: Res
     throw new ApiError(StatusCode.BAD_REQUEST, 'User not found')
   }
 
-  console.log(user.email);
 
   if (!user.otp.code) {
     throw new ApiError(StatusCode.BAD_REQUEST, 'Otp not found')
@@ -106,5 +106,6 @@ export const verifyOtp = asyncHandler(async (req: AuthenticatedRequest, res: Res
 
   await user.save();
 
+  console.log('Email verification successful');
   res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, {}, "Email verified successfully"));
 });

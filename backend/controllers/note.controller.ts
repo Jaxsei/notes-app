@@ -19,7 +19,7 @@ interface AuthenticatedRequest extends Request {
 /**
  * @description Creates note with title and content
  *
- * @route POST /note/
+ * @route POST /note/create
  * @param {AuthenticatedRequest} req - Request with body
  * @returns {Promise<void>}
  */
@@ -28,7 +28,7 @@ interface AuthenticatedRequest extends Request {
 export const createNote = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { title, content }: { title: string, content: string | { ops: any[] } } = req.body;
 
-  if (!title || !content) {
+  if (!title) {
     throw new ApiError(StatusCode.BAD_REQUEST, 'Title and content are required');
   }
 
@@ -55,7 +55,7 @@ export const createNote = asyncHandler(async (req: AuthenticatedRequest, res: Re
 /**
  * @description Gets all notes
  *
- * @route POST /note/
+ * @route POST /note/get
  * @param {AuthenticatedRequest} req - Request with body
  * @returns {Promise<void>}
  */
@@ -67,10 +67,40 @@ export const getNotes = asyncHandler(async (req: AuthenticatedRequest, res: Resp
 });
 
 
+
+/**
+ * @description Gets a specific notes
+ *
+ * @route GET /note/get/:id
+ * @param {AuthenticatedRequest} req - Request with body
+ * @returns {Promise<void>}
+ */
+
+// GETS a note
+export const getANote = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const noteId = req.params.id;
+
+  if (!noteId) {
+    throw new ApiError(StatusCode.NOT_FOUND, null, 'noteId not found')
+  }
+
+  const note = await Note.findOne({ _id: noteId, owner: req.user._id });
+
+  if (!note) {
+    return res
+      .status(StatusCode.NOT_FOUND)
+      .json(new ApiResponse(StatusCode.NOT_FOUND, null, "Note not found"));
+  }
+
+  res
+    .status(StatusCode.OK)
+    .json(new ApiResponse(StatusCode.OK, note, "Note retrieved successfully"));
+});
+
 /**
  * @description Updates note with title and content
  *
- * @route POST /note/:id
+ * @route POST /note/update/:id
  * @param {AuthenticatedRequest} req - Request with body
  * @returns {Promise<void>}
  */
@@ -78,31 +108,36 @@ export const getNotes = asyncHandler(async (req: AuthenticatedRequest, res: Resp
 // Update Note
 export const updateNote = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { title, content }: { title?: string, content?: string | { ops: any[] } } = req.body;
+  const updates = req.body;
 
-  const formattedContent =
-    typeof content === "string"
-      ? { ops: [{ insert: content }] }
-      : content;
+  console.log(id, updates);
+  // Optional: if content is present, format it
+  if (updates.content) {
+    updates.content =
+      typeof updates.content === "string"
+        ? { ops: [{ insert: updates.content }] }
+        : updates.content;
+  }
 
+  console.log("Updating Note ID:", id, "for User:", req.user._id);
   const note = await Note.findOneAndUpdate(
     { _id: id, owner: req.user._id },
-    { title, content: formattedContent },
+    updates,
     { new: true, runValidators: true }
   );
 
   if (!note) {
     throw new ApiError(404, 'Note not found');
   }
-
-  res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, note, 'Note updated successfully'));
+  res.status(StatusCode.OK).json(
+    new ApiResponse(StatusCode.OK, note, 'Note updated successfully')
+  );
 });
-
 
 /**
  * @description Deletes note 
  *
- * @route POST /note/:id
+ * @route POST /note/delete/:id
  * @param {AuthenticatedRequest} req - Request with body
  * @returns {Promise<void>}
  */

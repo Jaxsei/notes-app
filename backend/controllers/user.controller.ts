@@ -28,6 +28,7 @@ export const generateTokens = (userId) => {
 
 
 // Before running any of these Functions, A middleware called protectRoute will run in user.routes.js for security purposes 
+// Note: dont log credentials
 
 interface AuthenticationBody {
   email: string;
@@ -128,6 +129,8 @@ export const registerUser = asyncHandler(async (req: CustomRegisterRequest, res:
 
   // console.log('refreshToken set: ', refreshToken);
 
+  console.log('User registered successfully');
+
   res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, {
     accessToken,
     user: {
@@ -139,7 +142,6 @@ export const registerUser = asyncHandler(async (req: CustomRegisterRequest, res:
     }
   }, "User registered successfully"));
 
-  // console.log('response logged');
 });
 
 interface CustomLoginRequest extends Request {
@@ -215,6 +217,8 @@ export const loginUser = asyncHandler(async (req: CustomLoginRequest, res: Respo
   //
   // `);
 
+  console.log('User login successfully');
+  // console.log('refreshToken: ', refreshToken);
   res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, {
     accessToken,
     user: {
@@ -239,6 +243,8 @@ export const loginUser = asyncHandler(async (req: CustomLoginRequest, res: Respo
 
 // Logout
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
+
+  console.log('User logout successfully');
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -246,4 +252,88 @@ export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   });
 
   res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, null, "Logged out successfully"));
+
 })
+
+
+
+/**
+ * @description Checks if user is still authenticated
+ *
+ * @route POST /auth/checkauth
+ * @param {CustomRequest} req - Request with body
+ * @returns {Promise<void>}
+ */
+
+
+
+// CheckAuth
+export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    console.log('checked for user');
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.log("Error in checkAuth controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+})
+
+
+
+
+export const updateProfile = asyncHandler(
+  async (req: CustomRegisterRequest, res: Response) => {
+    let { email, username } = req.body;
+
+    if ([email, username].some((field) => field?.trim() === "")) {
+      throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
+    }
+
+    email = email.toLowerCase();
+    username = username.toLowerCase();
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new ApiError(StatusCode.NOT_FOUND, "User not found");
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }],
+      _id: { $ne: user._id },
+    });
+
+    if (existingUser) {
+      throw new ApiError(
+        StatusCode.CONFLICT,
+        "Email or username already taken"
+      );
+    }
+
+    const fileBuffer = req.file?.buffer;
+    if (!fileBuffer) {
+      throw new ApiError(StatusCode.BAD_REQUEST, "Avatar file is required");
+    }
+
+    const avatar = await uploadOnCloudinary(fileBuffer, username);
+    if (!avatar || !avatar.url) {
+      throw new ApiError(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        "Avatar upload failed"
+      );
+    }
+
+    user.email = email;
+    user.username = username;
+    user.avatar = avatar.url;
+
+    await user.save();
+
+    res.status(StatusCode.OK).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      isVerified: user.isVerified,
+    });
+  }
+);
