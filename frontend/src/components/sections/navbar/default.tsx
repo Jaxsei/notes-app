@@ -41,11 +41,11 @@ export default function Navbar({
   name = "Nuxtake",
   homeUrl = "/",
   mobileLinks = [
-    { text: "Getting Started", href: "/getting-started" },
+    { text: "Getting Started", href: "/signup" },
     { text: "Github", href: "https://github.com/Jaxsei/" },  // External link stays <a>
   ],
   actions = [
-    { text: "Login", href: "/loginin", isButton: false },
+    { text: "Login", href: "/login", isButton: false },
     {
       text: "Get Started",
       href: "/signup",
@@ -63,7 +63,7 @@ export default function Navbar({
         <NavbarComponent>
           <NavbarLeft>
             <Link
-              to={homeUrl}
+              to='/signup'
               className="flex items-center gap-2 text-xl font-bold"
             >
               {logo}

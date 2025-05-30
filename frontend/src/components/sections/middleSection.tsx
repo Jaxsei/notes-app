@@ -19,11 +19,11 @@ const MiddleSection = () => {
 
         <div className="flex gap-4 py-10">
           <Button asChild variant="default" className="px-4 py-6 text-lg rounded-md">
-            <Link to="/signin">Get Started</Link>
+            <Link to="/signup">Get Started</Link>
           </Button>
 
           <Button asChild variant="outline" className="px-4 py-6 text-lg rounded-md">
-            <Link to="/learn-more">Learn More</Link>
+            <Link to="https://github.com/Jaxsei/">Learn More</Link>
           </Button>
         </div>
       </main>
