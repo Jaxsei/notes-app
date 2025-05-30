@@ -79,29 +79,29 @@ Whether you're a student organizing study materials, a professional managing pro
 
 ### 🏠 Homepage
 
-![Homepage](![1000011285](https://github.com/user-attachments/assets/f3750a92-b784-4f90-a7d8-d85198804d30)
+![Homepage](ss/landing.jpg)
 )
 *Clean and welcoming landing page with feature highlights*
 
 ### 🔐 Authentication
 
-![Login](![1000011289](https://github.com/user-attachments/assets/9cb499b2-3537-4e34-8ebe-1d7fde35b091)
+![Login](ss/login.jpg)
 )
 
 
-![Signup](![1000011287](https://github.com/user-attachments/assets/03b3bc16-0888-4d3d-a4bb-0ac4aa30e8f6)
+![Signup](ss/signup.jpg)
 )
 *Secure authentication flow with modern design and validation*
 
 ### 📊 Dashboard
 
-![Dashboard](![1000011291](https://github.com/user-attachments/assets/e9548b63-c091-430d-8d03-973205be1a50)
+![Dashboard](ss/dashboard.jpg)
 )
 *Organized note management interface with search and filtering*
 
 ### ✏️ Editor
 
-![Editor](![1000011293](https://github.com/user-attachments/assets/acd2b407-813c-4a4c-8fa9-42336ff4b9a1)
+![Editor](ss/editor.jpg)
 )
 *Rich text editor with formatting tools and real-time preview*
 
