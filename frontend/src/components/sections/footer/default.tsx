@@ -1,4 +1,4 @@
-import { ModeToggle } from "../../utils/mode-togglee";
+import { ModeToggle } from "../../utils/mode-toggle";
 import {
   Footer,
   FooterColumn,

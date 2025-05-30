@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from "../../ui/sheet";
 import { Menu } from "lucide-react";
 import { ReactNode } from "react";
 import NuxtakeUI from "../../logos/nuxtakeUI";
-import { ModeToggle } from "../../mode-toggle";
+import { ModeToggle } from "../../utils/mode-toggle";
 
 interface NavbarLink {
   text: string;

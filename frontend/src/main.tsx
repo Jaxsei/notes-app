@@ -5,12 +5,12 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import { ThemeProvider } from "./components/utils/theme-provider";
 import { Toaster } from "react-hot-toast";
-import { LoginPage } from "./components/pages/LoginPage";
+import App from "./app";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider defaultTheme="light" storageKey="theme">
-        <LoginPage />
+        <App />
         <Toaster position="top-right" />
       </ThemeProvider>
     </BrowserRouter>

@@ -1,126 +1,591 @@
-import { Search, Plus, FolderPlus, Upload, Star, Pencil } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import NuxtakeUI from "../logos/nuxtakeUI";
-import { ModeToggle } from "../utils/mode-toggle";
+  Star,
+  Plus,
+  Upload,
+  MoreHorizontal,
+  Edit3,
+  Trash2,
+  Palette,
+  Download,
+  Calendar,
+  Loader,
+  FileText
+} from "lucide-react"; import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { NotesHeader } from "../sections/NotesHeader";
+import toast from "react-hot-toast";
+import { Textarea } from "../ui/textarea";
+import { NotesSidebar } from "../sections/sidebar";
+
+
+
+
+import { useAuthStore } from "./../store/useAuthStore";
+import { useNoteStore } from "./../store/useNoteStore";
+import { itemVariants, containerVariants, headerVariants, cardHoverVariants, sidebarVariants, floatingVariants, pulseVariants } from '../store/animationVariants'
+import { NOTE_COLORS } from "../utils/note-colors";
+import { deltaToText } from "../utils/deltaToText";
+import { exportNoteAsDelta } from "../store/exportNote";
+
 
 export default function NotesPage() {
-  const logo = <NuxtakeUI className='w-12 h-12' />
+  const navigate = useNavigate();
+  const { logout, authUser } = useAuthStore();
+  const {
+    notes,
+    isNoteLoading,
+    isCreatingNote,
+    deleteNote,
+    getNotes,
+    createNote,
+    updateNote,
+  } = useNoteStore();
+
+  // State management
+  const [newNoteTitle, setNewNoteTitle] = useState("");
+  const [newNoteContent, setNewNoteContent] = useState('')
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState("grid"); // grid | list
+  const [sortBy, setSortBy] = useState("recent"); // recent | title | starred
+  const [filterBy, setFilterBy] = useState("all"); // all | starred | folders
+  const [isCreatePopoverOpen, setIsCreatePopoverOpen] = useState(false);
+
+  useEffect(() => {
+    getNotes();
+  }, [getNotes]);
+
+  // Filtered and sorted notes
+  const filteredNotes = notes
+    .filter(note => {
+      const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = filterBy === "all" ||
+        (filterBy === "starred" && note.isStarred)
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "title":
+          return a.title.localeCompare(b.title);
+        case "starred":
+          return (b.isStarred ? 1 : 0) - (a.isStarred ? 1 : 0);
+        default: // recent
+          return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+      }
+    });
+
+  // Event handlers
+  const handleDelete = useCallback((noteId: string) => {
+    deleteNote(noteId);
+    navigate('/home')
+  }, [deleteNote]);
+
+  const handleCreateNote = useCallback(() => {
+    if (!newNoteTitle.trim()) return toast.error('Title is required');
+    if (!newNoteContent) return toast.error('Content is required')
+    createNote({ title: newNoteTitle.trim(), content: newNoteContent });
+    setNewNoteTitle("");
+    setNewNoteContent('');
+    setIsCreatePopoverOpen(false);
+  }, [newNoteTitle, newNoteContent, createNote]);
+
+  const handleEdit = useCallback((noteId: string) => {
+    navigate(`/edit/${noteId}`);
+  }, [navigate]);
+
+  const handleUpdate = useCallback((noteId: string, data) => {
+    updateNote(noteId, data)
+  }, [updateNote])
+
+  const handleExport = useCallback((notes) => {
+    exportNoteAsDelta(notes)
+  }, [notes])
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-truexl">
-        {/* Header */}
+    <div className="flex h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <motion.div
+        variants={sidebarVariants}
+        initial="hidden"
+        animate="show"
+        className="relative"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+        <NotesSidebar
+          filterBy={filterBy}
+          authUser={authUser}
+          logout={logout}
+          setFilterBy={setFilterBy}
+        />
+      </motion.div>
 
-        <header className="mb-[6rem] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Logo + Title group */}
-          <div className="flex items-center gap-2">
-            {logo}
-            <h1 className="text-5xl font-bold tracking-tight">Nuxtake</h1>
-          </div>
-
-          {/* Search bar + Mode toggle group */}
-          <div className="flex items-center gap-2 w-full max-w-xs md:max-w-md">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search notes..."
-                className="pl-10"
-              />
-            </div>
-            <ModeToggle />
-          </div>
-        </header>
-
-        {/* Notes Section */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-3xl font-semibold tracking-tight">Notes</h2>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="outline" className="rounded-full">
-                  <Plus className="h-5 w-5" />
-                  <span className="sr-only">Add item</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create note
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <FolderPlus className="mr-2 h-4 w-4" />
-                  Create folder
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import notes
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col relative overflow-hidden">
+        {/* Enhanced Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-gradient-to-bl from-primary/10 via-transparent to-transparent rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+          />
+          <motion.div
+            className="absolute -bottom-1/2 -left-1/2 w-96 h-96 bg-gradient-to-tr from-secondary/10 via-transparent to-transparent rounded-full blur-3xl"
+            variants={floatingVariants}
+            animate="animate"
+            style={{ animationDelay: '2s' }}
+          />
+          <motion.div
+            className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-accent/5 via-transparent to-transparent rounded-full blur-2xl"
+            variants={pulseVariants}
+            animate="animate"
+          />
+          <motion.div
+            className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-l from-muted/20 via-transparent to-transparent rounded-full blur-xl"
+            variants={pulseVariants}
+            animate="animate"
+            style={{ animationDelay: '1s' }}
+          />
         </div>
 
-        {/* Notes Grid */}
-        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {[
-            { title: "The beginning of prototyping is the most important part", date: '2025-04-28', stared: true },
-            { title: "13 Things You Should Give Up If You Want to Be a Successful UX Designer", date: '2025-04-28', stared: true },
-            { title: "The Psychology Principles Every UI/UX Designer Needs to Know", date: '2025-04-28', stared: true },
-            { title: "10 UI & UX Lessons from Building Medium's iPhone App", date: '2025-04-28', stared: true },
-            { title: "52 Research Terms you need to know as a UX Designer", date: '2025-04-28', stared: true },
-            { title: "Text fields & Forms design — UI components series", date: '2025-04-28', stared: true },
-          ].map((note, index) => (
-            <Card key={index} className="flex flex-col justify-between h-[240px] bg-muted">
-              <CardHeader className="p-4">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-2xl font-bold leading-tight line-clamp-3">
-                    {note.title}
-                  </CardTitle>
+        {/* Enhanced Header with animation */}
+        <motion.div
+          variants={headerVariants}
+          initial="hidden"
+          animate="show"
+          className="relative z-10"
+        >
+          <NotesHeader
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            authUser={authUser}
+          />
+        </motion.div>
 
-                  <CardContent className="px-4 pb-4">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      {/* Show star if stared */}
-                      {note.stared && (
-                        <div>
-                          <Star className="h-4 w-4" />
+        {/* Content Area */}
+        <div className="flex-1 overflow-auto relative z-10">
+          <div className="p-6 pb-20">
+            <div className="max-w-7xl mx-auto">
+              {/* Page Header with enhanced styling */}
+              <motion.div
+                className="flex items-center justify-between mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <div className="space-y-2">
+                  <motion.h1
+                    className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                  >
+                    My Notes
+                  </motion.h1>
+                  <motion.p
+                    className="text-muted-foreground flex items-center gap-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                  >
+                    <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-medium rounded-full bg-primary/10 text-primary">
+                      {filteredNotes.length}
+                    </span>
+                    {filteredNotes.length === 1 ? 'note' : 'notes'}
+                    {filterBy !== "all" && (
+                      <span className="text-xs bg-secondary/50 px-2 py-1 rounded-full border border-border/50">
+                        in {filterBy}
+                      </span>
+                    )}
+                  </motion.p>
+                </div>
+
+                <motion.div
+                  className="flex items-center gap-3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-accent hover:border-border transition-all duration-200"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import
+                  </Button>
+
+                  <Popover open={isCreatePopoverOpen} onOpenChange={setIsCreatePopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200">
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Note
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-96 bg-background/95 backdrop-blur-sm border-border/50" align="end">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-4"
+                      >
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-foreground">Create New Note</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Add a title and content for your new note
+                          </p>
                         </div>
-                      )}
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground">Title</label>
+                            <Input
+                              placeholder="Enter note title..."
+                              value={newNoteTitle}
+                              onChange={(e) => setNewNoteTitle(e.target.value)}
+                              className="bg-background border-border focus:border-primary focus:ring-1 focus:ring-primary"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground">Content</label>
+                            <Textarea
+                              placeholder="Write your note content here..."
+                              value={newNoteContent}
+                              onChange={(e) => setNewNoteContent(e.target.value)}
+                              className="bg-background border-border focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-none"
+                              rows={5}
+                            />
+                          </div>
+                          <div className="flex justify-end gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setIsCreatePopoverOpen(false)}
+                              className="bg-background hover:bg-accent"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCreateNote({ title: newNoteTitle, content: setNewNoteContent })
+                              }}
+                              disabled={isCreatingNote || !newNoteTitle.trim()}
+                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            >
+                              {isCreatingNote ? <Loader className="h-4 w-4 animate-spin" /> : "Create Note"}
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </PopoverContent>
+                  </Popover>
+                </motion.div>
+              </motion.div>
+
+              {/* Notes Grid/List */}
+              {isNoteLoading ? (
+                <motion.div
+                  className="flex items-center justify-center py-20"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="relative">
+                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-muted border-t-primary"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 to-transparent animate-pulse"></div>
                     </div>
-                  </CardContent>
+                    <p className="text-muted-foreground">Loading your notes...</p>
+                  </div>
+                </motion.div>
+              ) : filteredNotes.length === 0 ? (
+                <motion.div
+                  className="text-center py-20"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <div className="max-w-md mx-auto space-y-6">
+                    <motion.div
+                      className="w-24 h-24 mx-auto bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <FileText className="w-10 h-10 text-primary/60" />
+                    </motion.div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold text-foreground">
+                        {searchQuery ? "No notes found" : "Start your journey"}
+                      </h3>
+                      <p className="text-muted-foreground">
+                        {searchQuery
+                          ? "Try adjusting your search or filters"
+                          : "Create your first note and begin organizing your thoughts"
+                        }
+                      </p>
+                    </div>
+                    {!searchQuery && (
+                      <Button
+                        onClick={() => setIsCreatePopoverOpen(true)}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Note
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  className={viewMode === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 auto-rows-max"
+                    : "space-y-3"
+                  }
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {filteredNotes.map((note, index) => (
+                      <motion.div
+                        key={note._id}
+                        variants={itemVariants}
+                        exit="exit"
+                        layout
+                        layoutId={note._id}
+                        style={{
+                          animationDelay: `${index * 0.05}s`
+                        }}
+                      >
+                        <motion.div
+                          variants={cardHoverVariants}
+                          initial="rest"
+                          whileHover="hover"
+                          className="group cursor-pointer h-full"
+                        >
+                          <Card
+                            className={`
+                            relative h-full overflow-hidden backdrop-blur-sm border-border/50
+                            transition-all duration-300 hover:shadow-lg hover:shadow-primary/5
+                            ${NOTE_COLORS.find(c => c.name === note.color)?.class || NOTE_COLORS[0].class}
+                            hover:border-border
+                          `}
+                          >
+                            {/* Subtle animated background pattern */}
+                            <div className="absolute inset-0 opacity-5">
+                              <div className="absolute inset-0 bg-gradient-to-br from-current via-transparent to-transparent"></div>
+                            </div>
 
-                </div>
-              </CardHeader>
-              <CardContent className="px-4 pb-4">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  {/* Format the date to something cleaner */}
-                  <span>{new Date(note.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                  {/* Dropdown for More Options */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="text-muted-foreground">
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
-                      <DropdownMenuItem>Colour</DropdownMenuItem>
-                      <DropdownMenuItem>Export Notes</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                            <CardHeader className="pb-3 relative z-10 flex-none">
+                              <div className="flex items-start justify-between gap-3">
+                                <CardTitle
+                                  className="text-base leading-snug line-clamp-3 group-hover:text-primary transition-colors duration-200 cursor-pointer font-semibold"
+                                  onClick={(e) => navigate(`/notes/${note._id}`)}
+                                >
+                                  {note.title}
+                                </CardTitle>
+                                <motion.div
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className={`h-8 w-8 shrink-0 transition-all duration-200 rounded-full ${note.isStarred
+                                      ? "text-yellow-500 hover:text-yellow-600 bg-yellow-500/10"
+                                      : "text-muted-foreground hover:text-yellow-500 hover:bg-yellow-500/10"
+                                      }`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdate(note._id, { isStarred: !note.isStarred });
+                                    }}
+                                  >
+                                    <Star className={`h-4 w-4 transition-all duration-200 ${note.isStarred ? "fill-current scale-110" : ""}`} />
+                                  </Button>
+                                </motion.div>
+                              </div>
 
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                              {note.content?.ops && (
+                                <motion.p
+                                  className="text-sm text-muted-foreground line-clamp-4 mt-3 leading-relaxed"
+                                  initial={{ opacity: 0.8 }}
+                                  whileHover={{ opacity: 1 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {deltaToText(note.content)
+                                    .replace(/<[^>]*>/g, '')
+                                    .slice(0, viewMode === "grid" ? 150 : 100)}...
+                                </motion.p>
+                              )}
+                            </CardHeader>
+
+                            <CardContent className="pt-0 relative z-10 flex-none mt-auto">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <motion.span
+                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50 font-medium border border-border/30"
+                                    whileHover={{ scale: 1.05 }}
+                                  >
+                                    <Calendar className="w-3 h-3" />
+                                    {new Date(note.updatedAt || note.createdAt).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </motion.span>
+                                </div>
+
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <motion.div
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                    >
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full hover:bg-muted/50"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </motion.div>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    align="end"
+                                    className="w-48 bg-background/95 backdrop-blur-sm border-border/50"
+                                  >
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEdit(note._id);
+                                      }}
+                                      className="hover:bg-accent"
+                                    >
+                                      <Edit3 className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuSeparator className="bg-border/50" />
+
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger className="flex w-full items-center px-2 py-1.5 text-sm hover:bg-accent rounded-sm">
+                                        <Palette className="h-4 w-4 mr-2" />
+                                        Change color
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent
+                                        side="left"
+                                        align="start"
+                                        className="bg-background/95 backdrop-blur-sm border-border/50"
+                                      >
+                                        {NOTE_COLORS.map((color) => (
+                                          <DropdownMenuItem
+                                            key={color.name}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleUpdate(note._id, { color: color.name });
+                                            }}
+                                            className="hover:bg-accent"
+                                          >
+                                            <motion.div
+                                              className={`w-4 h-4 rounded-full mr-2 border ${color.class}`}
+                                              whileHover={{ scale: 1.2 }}
+                                              transition={{ duration: 0.1 }}
+                                            />
+                                            {color.name.charAt(0).toUpperCase() + color.name.slice(1)}
+                                          </DropdownMenuItem>
+                                        ))}
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleExport(note);
+                                      }}
+                                      className="hover:bg-accent"
+                                    >
+                                      <Download className="h-4 w-4 mr-2" />
+                                      Export
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuSeparator className="bg-border/50" />
+
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem
+                                          className="text-destructive focus:text-destructive hover:bg-destructive/10"
+                                          onSelect={(e) => e.preventDefault()}
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="bg-background/95 backdrop-blur-sm border-border/50">
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete "{note.title}"? This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel className="bg-background hover:bg-accent">Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => handleDelete(note._id)}
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                          >
+                                            Delete
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

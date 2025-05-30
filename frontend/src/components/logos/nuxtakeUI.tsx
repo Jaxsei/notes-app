@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useTheme } from "../theme-provider";
+import { useTheme } from "../utils/theme-provider";
 const NuxtakeUI = () => {
   const { theme } = useTheme();
   return (
