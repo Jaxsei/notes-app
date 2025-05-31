@@ -15,6 +15,7 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));   // For JSON data
 app.use(express.urlencoded({ extended: true, limit: '50mb' })); // For form data
 app.use(cookieParser());
+app.set("trust proxy", 1);
 
 
 // Routes declaration
