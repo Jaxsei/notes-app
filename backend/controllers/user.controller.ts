@@ -45,7 +45,7 @@ if (!JWT_SECRET) {
 const getCookieOptions = (maxAge: number) => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "none",
+  sameSite: 'none' as const,
   maxAge,
 });
 
@@ -119,7 +119,7 @@ export const registerUser = asyncHandler(async (req: CustomRegisterRequest, res:
 
   const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
-  res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+  res.cookie("refreshToken", refreshToken, getCookieOptions(14 * 24 * 60 * 60 * 1000));
 
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, {
@@ -156,7 +156,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
   const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
-  res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+  res.cookie("refreshToken", refreshToken, getCookieOptions(14 * 24 * 60 * 60 * 1000));
   res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
 
   res.status(StatusCode.OK).json(
