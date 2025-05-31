@@ -1,6 +1,6 @@
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: process.env.NODE_ENV === "development" ? "http://localhost:5000/api/v1" : "https://notes-app-3nbt.onrender.com/api/v1",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
 });
