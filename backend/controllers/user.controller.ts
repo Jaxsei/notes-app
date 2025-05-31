@@ -106,6 +106,7 @@ export const registerUser = asyncHandler(async (req: CustomRegisterRequest, res:
   if (!avatar?.url) {
     throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Failed to upload avatar");
   }
+  console.log('Avatar uploaded: ', avatar.url);
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -119,7 +120,9 @@ export const registerUser = asyncHandler(async (req: CustomRegisterRequest, res:
 
   const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
-  res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+  res.cookie("refreshToken", refreshToken, getCookieOptions(14 * 24 * 60 * 60 * 1000));
+
+  console.log('successfully registered User');
 
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, {
