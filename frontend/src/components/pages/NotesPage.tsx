@@ -108,7 +108,6 @@ export default function NotesPage() {
   // Event handlers
   const handleDelete = useCallback((noteId: string) => {
     deleteNote(noteId);
-    navigate('/home')
   }, [deleteNote]);
 
   const handleCreateNote = useCallback(() => {
@@ -414,7 +413,9 @@ export default function NotesPage() {
                               <div className="flex items-start justify-between gap-3">
                                 <CardTitle
                                   className="text-base leading-snug line-clamp-3 group-hover:text-primary transition-colors duration-200 cursor-pointer font-semibold"
-                                  onClick={(e) => navigate(`/notes/${note._id}`)}
+                                  onClick={(e) =>
+
+                                    navigate(`/notes/${note._id}`)}
                                 >
                                   {note.title}
                                 </CardTitle>

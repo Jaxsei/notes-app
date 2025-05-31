@@ -45,7 +45,7 @@ if (!JWT_SECRET) {
 const getCookieOptions = (maxAge: number) => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: 'none' as const,
+  sameSite: 'strict' as const,
   maxAge,
 });
 
@@ -162,6 +162,8 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   res.cookie("refreshToken", refreshToken, getCookieOptions(14 * 24 * 60 * 60 * 1000));
   res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
 
+  console.log('Login user successfully');
+
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, {
       accessToken,
@@ -181,6 +183,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const logoutUser = asyncHandler(async (_req: Request, res: Response) => {
   res.clearCookie("refreshToken", getCookieOptions(0));
+  console.log('User logout successfully');
 
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, null, "Logged out successfully")
@@ -195,6 +198,8 @@ export const checkAuth = asyncHandler(async (req: AuthenticatedRequest, res: Res
   if (!req.user) {
     throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
   }
+
+  console.log('successfully checked for auth');
 
   res.status(StatusCode.OK).json(req.user);
 });
@@ -220,18 +225,9 @@ export const updateProfile = asyncHandler(async (
   email = email.toLowerCase();
   username = username.toLowerCase();
 
-  const user = await User.findById(req.user._id);
+  const user = await User.findOne({ $or: [{ email }, { username }] });
   if (!user) {
     throw new ApiError(StatusCode.NOT_FOUND, "User not found");
-  }
-
-  const existing = await User.findOne({
-    $or: [{ email }, { username }],
-    _id: { $ne: user._id }
-  });
-
-  if (existing) {
-    throw new ApiError(StatusCode.CONFLICT, "Email or username already taken");
   }
 
   if (!req.file?.buffer) {
@@ -242,6 +238,7 @@ export const updateProfile = asyncHandler(async (
   if (!avatar?.url) {
     throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Failed to upload avatar");
   }
+  console.log('Image upload successfully');
 
   user.email = email;
   user.username = username;

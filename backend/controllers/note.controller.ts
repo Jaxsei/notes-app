@@ -32,6 +32,7 @@ export const createNote = asyncHandler(async (req: AuthenticatedRequest, res: Re
     throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, 'Failed to create note');
   }
 
+  console.log('Note created successfully');
   res.status(StatusCode.CREATED).json(
     new ApiResponse(StatusCode.CREATED, note, 'Note created successfully')
   );
@@ -40,6 +41,8 @@ export const createNote = asyncHandler(async (req: AuthenticatedRequest, res: Re
 // Get All Notes
 export const getNotes = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const notes = await Note.find({ owner: req.user?._id }).sort({ createdAt: -1 });
+
+  console.log('Note GET all successfully');
 
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, notes, 'Notes retrieved successfully')
@@ -59,6 +62,9 @@ export const getANote = asyncHandler(async (req: AuthenticatedRequest, res: Resp
   if (!note) {
     throw new ApiError(StatusCode.NOT_FOUND, 'Note not found');
   }
+
+
+  console.log('Note GET one successfully');
 
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, note, 'Note retrieved successfully')
@@ -90,6 +96,9 @@ export const updateNote = asyncHandler(async (req: AuthenticatedRequest, res: Re
     throw new ApiError(StatusCode.NOT_FOUND, 'Note not found');
   }
 
+
+  console.log('Note updated successfully');
+
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, note, 'Note updated successfully')
   );
@@ -108,6 +117,9 @@ export const deleteNote = asyncHandler(async (req: AuthenticatedRequest, res: Re
   if (!note) {
     throw new ApiError(StatusCode.NOT_FOUND, 'Note not found');
   }
+
+
+  console.log('Note deleted successfully');
 
   res.status(StatusCode.OK).json(
     new ApiResponse(StatusCode.OK, {}, 'Note deleted successfully')
