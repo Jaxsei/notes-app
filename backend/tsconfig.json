@@ -9,6 +9,13 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+    "types": [
+      "node",
+      "express",
+      "jsonwebtoken",
+      "multer",
+      "nodemailer"
+    ],
     "sourceMap": true
   },
   "exclude": [
