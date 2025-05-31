@@ -4,36 +4,64 @@ import { Request, Response, NextFunction } from "express";
 import { ApiError } from "../utils/ApiError";
 import { StatusCode } from "../utils/StatusCode";
 
-// Optional: Custom Request type with user
+// Custom Request type with a typed user object
 interface AuthenticatedRequest extends Request {
-  user?: any;
+  user?: {
+    _id: string;
+    email: string;
+    username: string;
+    avatar?: string;
+    // Add more fields if needed
+  };
 }
 
 export const protectRoute = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   console.log(">>> protectRoute middleware executed");
 
   try {
-    const token = req.cookies?.refreshToken;
-    console.log("refreshToken:", token);
+    // Get token from either cookie or Authorization header
+    let token = req.cookies?.accessToken;
+
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized - No Token Provided" });
+      return next(new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized - No token provided"));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    // console.log("Decoded token:", decoded);
+    // Fail-safe for missing secret
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET not defined in environment");
+    }
 
-    const user = await User.findById(decoded.userId || decoded._id).select("-password");
-    // console.log("Authenticated user:", user);
+    // Decode token
+    const decoded = jwt.verify(token, secret) as JwtPayload;
+    const userId = decoded.userId || decoded._id;
+
+    if (!userId) {
+      return next(new ApiError(StatusCode.UNAUTHORIZED, "Invalid token payload"));
+    }
+
+    // Find user
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return next(new ApiError(StatusCode.NOT_FOUND, "User not found"));
     }
 
-    req.user = user;
+    // Attach user to request
+    req.user = {
+      _id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+    };
+
     next();
   } catch (error: any) {
-    console.log("Error in protectRoute middleware:", error.message);
-    return res.status(401).json({ message: "Unauthorized - Invalid Token" });
+    console.error("Error in protectRoute middleware:", error.message);
+    return next(new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized - Invalid or expired token"));
   }
 };

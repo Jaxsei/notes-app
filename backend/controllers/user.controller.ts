@@ -1,34 +1,23 @@
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import validator from "validator";
+import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
+import { ApiResponse } from "../utils/ApiResponse";
+import { StatusCode } from "../utils/StatusCode";
 import { User } from "../models/user.model";
 import { uploadOnCloudinary } from "../utils/cloudinary";
-import { ApiResponse } from "../utils/ApiResponse";
-import bcrypt from 'bcryptjs';
-import validator from "validator";
-import { Request, Response } from 'express';
-import { StatusCode } from "../utils/StatusCode";
+import dotenv from 'dotenv';
+dotenv.config();
 
-// Generate Access & Refresh Tokens
-export const generateTokens = (userId) => {
-  const accessToken = jwt.sign(
-    { userId },
-    process.env.JWT_SECRET || 'athanasia',
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' } // Shorter expiry for access token
-  );
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
 
-  const refreshToken = jwt.sign(
-    { userId },
-    process.env.JWT_SECRET || 'athanasia',
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' } // Longer expiry for refresh token
-  );
-
-  return { accessToken, refreshToken };
-};
-
-
-// Before running any of these Functions, A middleware called protectRoute will run in user.routes.js for security purposes 
-// Note: dont log credentials
+interface AuthenticatedRequest extends Request {
+  user?: { _id: string };
+}
 
 interface AuthenticationBody {
   email: string;
@@ -41,299 +30,227 @@ interface CustomRegisterRequest extends Request {
   file?: Express.Multer.File;
 }
 
-/**
- * @description Registers a new user with email, username, password, and avatar.
- * Validates input, uploads avatar, saves user, and returns tokens.
- *
- * @route POST /auth/signup
- * @param {CustomRequest} req - Request with body and optional avatar file.
- * @param {Response} res - Express response object.
- * @returns {Promise<void>}
- */
+// ─────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────
 
+const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || "15m";
+const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || "7d";
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined in environment variables.");
+}
+
+const getCookieOptions = (maxAge: number) => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  maxAge,
+});
+
+// ─────────────────────────────────────────────
+// Token Generator
+// ─────────────────────────────────────────────
+
+export const generateTokens = (userId: string) => {
+  if (!userId) throw new Error("generateTokens: userId is required.");
+
+  const payload = { userId };
+
+  // @ts-ignore
+  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+
+  // @ts-ignore
+  const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
+
+  return { accessToken, refreshToken };
+};
+
+// ─────────────────────────────────────────────
+// Register
+// ─────────────────────────────────────────────
 
 export const registerUser = asyncHandler(async (req: CustomRegisterRequest, res: Response) => {
   let { email, username, password } = req.body;
 
-  if ([email, username, password].some((field) => field?.trim() === "")) {
+  if ([email, username, password].some((field) => !field?.trim())) {
     throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
   }
 
-  username = username?.toLowerCase();
-  email = email?.toLowerCase();
+  email = email.toLowerCase();
+  username = username.toLowerCase();
 
   if (!validator.isEmail(email)) {
-    throw new ApiError(StatusCode.BAD_REQUEST, 'Invalid email format')
+    throw new ApiError(StatusCode.BAD_REQUEST, "Invalid email format");
   }
-
 
   if (username.length < 4) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "Username must be atleast 4 characters")
+    throw new ApiError(StatusCode.BAD_REQUEST, "Username must be at least 4 characters");
   }
-
 
   if (password.length < 8) {
     throw new ApiError(StatusCode.BAD_REQUEST, "Password must be at least 8 characters");
   }
 
-  const existedUser = await User.findOne({ $or: [{ username }, { email }] });
-  if (existedUser) {
-    throw new ApiError(StatusCode.CONFLICT, "User with email or username already exists");
+  const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+  if (existingUser) {
+    throw new ApiError(StatusCode.CONFLICT, "User already exists with the provided email or username");
   }
-  // console.log("User found: ", existedUser);
 
-  const fileBuffer = req.file?.buffer;
-  if (!fileBuffer) {
+  if (!req.file?.buffer) {
     throw new ApiError(StatusCode.BAD_REQUEST, "Avatar file is required");
   }
 
-  // console.log('avatar file found: ', fileBuffer);
-
-  const avatar = await uploadOnCloudinary(fileBuffer, req.body?.username);
-  console.log(avatar);
-  if (!avatar) {
-    throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Avatar upload failed");
+  const avatar = await uploadOnCloudinary(req.file.buffer, username);
+  if (!avatar?.url) {
+    throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Failed to upload avatar");
   }
 
-  // console.log('avatar uploaded: ', avatar);
-
-  const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds = 10
-  // console.log('Password hashed: ', hashedPassword);
-
-  if (!hashedPassword) {
-    throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Password hashing failed");
-  }
-
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await User.create({
-    avatar: avatar.url,
     email,
+    username,
     password: hashedPassword,
-    username: username.toLowerCase(),
-    isVerified: false
+    avatar: avatar.url,
+    isVerified: false,
   });
 
-  // console.log('User created: ', user);
-  if (!user) {
-    throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "User creation failed");
-  }
+  const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
-  const { accessToken, refreshToken } = generateTokens(user._id);
+  res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV, // Set to true in production
-    sameSite: "strict",
-    maxAge: 12 * 24 * 60 * 60 * 1000, // 7 days
-  });
-
-  // console.log('refreshToken set: ', refreshToken);
-
-  console.log('User registered successfully');
-
-  res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, {
-    accessToken,
-    user: {
-      _id: user._id,
-      email: user.email,
-      avatar: user.avatar,
-      username: user.username,
-      isVerified: user.isVerified
-    }
-  }, "User registered successfully"));
-
+  res.status(StatusCode.OK).json(
+    new ApiResponse(StatusCode.OK, {
+      accessToken,
+      user: {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar,
+        isVerified: user.isVerified,
+      },
+    }, "User registered successfully")
+  );
 });
 
-interface CustomLoginRequest extends Request {
-  body: AuthenticationBody;
-}
-/**
- * @description Logins user with email, username, password
- *
- * @route POST /auth/login
- * @param {CustomRequest} req - Request with body
- * @param {Response} res - Express response object.
- * @returns {Promise<void>}
- */
+// ─────────────────────────────────────────────
+// Login
+// ─────────────────────────────────────────────
 
-// LoginUser
-export const loginUser = asyncHandler(async (req: CustomLoginRequest, res: Response) => {
-  let { username, email, password }: { username: string, email: string, password: string } = req.body;
-  //console.log(req.body.username, req.body.email) // Debug
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+  const { email, username, password } = req.body as AuthenticationBody;
 
-  if ([email, username, password].some((field) => field?.trim() === "")) {
+  if ([email, username, password].some((field) => !field?.trim())) {
     throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
   }
 
-  username = username?.toLowerCase();
-  email = email?.toLowerCase();
-
-  // Debugging: Print input values
-  //console.log("Login Attempt:", { username, email });
-
   const user = await User.findOne({
-    $or: [{ email }, { username }]
+    $or: [{ email: email.toLowerCase() }, { username: username.toLowerCase() }]
   });
 
-  //console.log("Found User:", user); // Debugging
-
-  if (!user) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "Invalid email or username");
-  }
-
-  // console.log('Found user: ', user);
-
-
-  const isPasswordCorrect = await bcrypt.compare(password, user.password);
-  if (!isPasswordCorrect) {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     throw new ApiError(StatusCode.BAD_REQUEST, "Invalid credentials");
   }
 
-  // console.log('Password correct?: ', isPasswordCorrect ? true : false);
+  const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
-  const { accessToken, refreshToken } = generateTokens(user._id);
+  res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+  res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
 
-  if (!accessToken || !refreshToken) {
-    throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Creation of authentication token failed")
-  }
-
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV,
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV,
-    sameSite: "strict",
-    maxAge: 15 * 60 * 1000, // Shorter lifespan (15 mins)
-  });
-
-  //   console.log(`
-  // accessToken: ${accessToken}
-  // refreshToken: ${refreshToken}
-  //
-  // `);
-
-  console.log('User login successfully');
-  // console.log('refreshToken: ', refreshToken);
-  res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, {
-    accessToken,
-    user: {
-      _id: user._id,
-      email: user.email,
-      avatar: user.avatar,
-      username: user.username,
-    }
-  }, "User login successfully"));
-
+  res.status(StatusCode.OK).json(
+    new ApiResponse(StatusCode.OK, {
+      accessToken,
+      user: {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar,
+      }
+    }, "User login successful")
+  );
 });
 
-
-/**
- * @description Logsout user
- *
- * @route POST /auth/logout
- * @param {CustomRequest} req - Request with body
- * @returns {Promise<void>}
- */
-
-
+// ─────────────────────────────────────────────
 // Logout
-export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
+// ─────────────────────────────────────────────
 
-  console.log('User logout successfully');
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+export const logoutUser = asyncHandler(async (_req: Request, res: Response) => {
+  res.clearCookie("refreshToken", getCookieOptions(0));
+
+  res.status(StatusCode.OK).json(
+    new ApiResponse(StatusCode.OK, null, "Logged out successfully")
+  );
+});
+
+// ─────────────────────────────────────────────
+// Check Auth
+// ─────────────────────────────────────────────
+
+export const checkAuth = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  if (!req.user) {
+    throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
+  }
+
+  res.status(StatusCode.OK).json(req.user);
+});
+
+// ─────────────────────────────────────────────
+// Update Profile
+// ─────────────────────────────────────────────
+
+export const updateProfile = asyncHandler(async (
+  req: CustomRegisterRequest & AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  let { email, username } = req.body;
+
+  if (!req.user?._id) {
+    throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
+  }
+
+  if ([email, username].some((field) => !field?.trim())) {
+    throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
+  }
+
+  email = email.toLowerCase();
+  username = username.toLowerCase();
+
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new ApiError(StatusCode.NOT_FOUND, "User not found");
+  }
+
+  const existing = await User.findOne({
+    $or: [{ email }, { username }],
+    _id: { $ne: user._id }
   });
 
-  res.status(StatusCode.OK).json(new ApiResponse(StatusCode.OK, null, "Logged out successfully"));
-
-})
-
-
-
-/**
- * @description Checks if user is still authenticated
- *
- * @route POST /auth/checkauth
- * @param {CustomRequest} req - Request with body
- * @returns {Promise<void>}
- */
-
-
-
-// CheckAuth
-export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
-  try {
-    console.log('checked for user');
-    res.status(200).json(req.user);
-  } catch (error) {
-    console.log("Error in checkAuth controller", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+  if (existing) {
+    throw new ApiError(StatusCode.CONFLICT, "Email or username already taken");
   }
-})
 
-
-
-
-export const updateProfile = asyncHandler(
-  async (req: CustomRegisterRequest, res: Response) => {
-    let { email, username } = req.body;
-
-    if ([email, username].some((field) => field?.trim() === "")) {
-      throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
-    }
-
-    email = email.toLowerCase();
-    username = username.toLowerCase();
-
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      throw new ApiError(StatusCode.NOT_FOUND, "User not found");
-    }
-
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
-      _id: { $ne: user._id },
-    });
-
-    if (existingUser) {
-      throw new ApiError(
-        StatusCode.CONFLICT,
-        "Email or username already taken"
-      );
-    }
-
-    const fileBuffer = req.file?.buffer;
-    if (!fileBuffer) {
-      throw new ApiError(StatusCode.BAD_REQUEST, "Avatar file is required");
-    }
-
-    const avatar = await uploadOnCloudinary(fileBuffer, username);
-    if (!avatar || !avatar.url) {
-      throw new ApiError(
-        StatusCode.INTERNAL_SERVER_ERROR,
-        "Avatar upload failed"
-      );
-    }
-
-    user.email = email;
-    user.username = username;
-    user.avatar = avatar.url;
-
-    await user.save();
-
-    res.status(StatusCode.OK).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      avatar: user.avatar,
-      isVerified: user.isVerified,
-    });
+  if (!req.file?.buffer) {
+    throw new ApiError(StatusCode.BAD_REQUEST, "Avatar is required");
   }
-);
+
+  const avatar = await uploadOnCloudinary(req.file.buffer, username);
+  if (!avatar?.url) {
+    throw new ApiError(StatusCode.INTERNAL_SERVER_ERROR, "Failed to upload avatar");
+  }
+
+  user.email = email;
+  user.username = username;
+  user.avatar = avatar.url;
+
+  await user.save();
+
+  res.status(StatusCode.OK).json({
+    _id: user._id,
+    email: user.email,
+    username: user.username,
+    avatar: user.avatar,
+    isVerified: user.isVerified
+  });
+});

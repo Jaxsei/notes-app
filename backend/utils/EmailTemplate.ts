@@ -1,4 +1,4 @@
-const EmailTemplate = (email, otp) => {
+const EmailTemplate = (email: string, otp: string) => {
   return `
 <!DOCTYPE html>
 <html lang="en">
