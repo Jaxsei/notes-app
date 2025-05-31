@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "backend for nuxtake",
   "main": "server.ts",
-"scripts": {
-  "dev": "ts-node-dev --respawn --transpile-only server.ts",
-  "build": "tsc",
-  "start": "node dist/server.js",
-  "drop": "ts-node utils/scripts/dropCollection.ts",
-  "format": "prettier --write \"src/**/*.ts\""
-},
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "drop": "ts-node utils/scripts/dropCollection.ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
   "author": "jaxsei",
   "license": "ISC",
   "dependencies": {
@@ -29,7 +29,10 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.2",
-    "@types/node": "^22.15.21",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.15.29",
+    "@types/nodemailer": "^6.4.17",
     "esbuild": "^0.25.5",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3",
