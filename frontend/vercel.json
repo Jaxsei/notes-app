@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://notes-app-3nbt.onrender.com"
+      "destination": "/"
     }
   ]
 }

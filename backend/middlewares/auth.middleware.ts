@@ -20,11 +20,8 @@ export const protectRoute = async (req: AuthenticatedRequest, res: Response, nex
 
   try {
     // Get token from either cookie or Authorization header
-    let token = req.cookies?.accessToken;
-
-    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
+    let token = req.cookies?.refreshToken;
+    console.log(token ? `refreshToken found: ' ${token}` : 'refreshToken not found: error');
 
     if (!token) {
       return next(new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized - No token provided"));

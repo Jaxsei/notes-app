@@ -44,8 +44,10 @@ if (!JWT_SECRET) {
 
 const getCookieOptions = (maxAge: number) => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: 'strict' as const,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  domain: process.env.NODE_ENV === 'production' ? 'jaxseis-projects.vercel.app' : undefined,
+  path: '/',
   maxAge,
 });
 

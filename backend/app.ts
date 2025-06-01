@@ -1,42 +1,27 @@
 import express from "express";
-import cors from "cors";
+import cors from 'cors';
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
-import path from "path";
-
+import dotenv from 'dotenv';
 dotenv.config();
 
-import authRoutes from "./routes/auth.routes";
-import noteRoutes from "./routes/note.routes";
-
-// Create the Express app
 const app = express();
-
-// Middleware
-app.set("trust proxy", 1); // 🛡️ For secure cookies behind proxy (like Render)
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN,
   credentials: true,
-}));
+  optionsSuccessStatus: 200
+}))
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: '50mb' }));   // For JSON data
+app.use(express.urlencoded({ extended: true, limit: '50mb' })); // For form data
 app.use(cookieParser());
+app.set("trust proxy", 1);
 
-// Routes
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/notes", noteRoutes);
 
-// Serve frontend in production
-if (process.env.NODE_ENV === "production") {
-  const rootPath = path.resolve(); // avoids import.meta.url
-  app.use(express.static(path.join(rootPath, "frontend", "dist")));
+// Routes declaration
+import authRoutes from './routes/auth.routes';
+import noteRoutes from './routes/note.routes';
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
-  });
-}
-
+app.use('/api/v1/auth', authRoutes);  // Keep auth under /api/v1/auth
+app.use('/api/v1/notes', noteRoutes);  // Notes should have a separate endpoint
 export { app }
-
