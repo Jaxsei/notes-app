@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
-    "build": "npm install && tsc",
+    "build": "tsc",
     "start": "node dist/server.js",
     "drop": "ts-node utils/scripts/dropCollection.ts",
     "format": "prettier --write \"src/**/*.ts\""

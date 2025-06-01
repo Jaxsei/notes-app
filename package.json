@@ -4,8 +4,10 @@
   "description": "> Create beautiful notes, export and share seamlessly",
   "main": "index.js",
   "scripts": {
-    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
-    "start": "npm run start --prefix backend"
+    "install": "npm install --prefix backend && npm install --prefix frontend",
+    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "execute": "npm run install && npm run build",
+    "start": "node backend/dist/server.js"
   },
   "repository": {
     "type": "git",
@@ -17,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/Jaxsei/notes-app/issues"
   },
-  "homepage": "https://github.com/Jaxsei/notes-app#readme"
+  "homepage": "https://github.com/Jaxsei/notes-app#readme",
+  "devDependencies": {
+    "rollup-plugin-visualizer": "^6.0.1"
+  }
 }
