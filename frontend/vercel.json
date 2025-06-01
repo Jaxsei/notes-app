@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/api/v1/(.*)",
+      "destination": "https://notes-app-bd5h.onrender.com/api/v1/$1"
     }
   ]
 }
