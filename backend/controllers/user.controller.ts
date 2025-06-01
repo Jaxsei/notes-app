@@ -42,11 +42,11 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in environment variables.");
 }
 
-const getCookieOptions = (maxAge: number) => ({
+const getCookieOptions = (maxAge: number): import('express').CookieOptions => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' as const,
-  domain: process.env.NODE_ENV === 'production' ? 'jaxseis-projects.vercel.app' : undefined,
+  sameSite: (process.env.NODE_ENV === 'production' ? 'none' : 'lax') as 'none' | 'lax',
+  domain: process.env.NODE_ENV === 'production' ? 'notes-g559wkzgl-jaxseis-projects.vercel.app' : 'localhost',
   path: '/',
   maxAge,
 });
