@@ -16,7 +16,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://localhost:5173', // Change this to your deployed frontend URL in production
   credentials: true,
 }));
 
@@ -24,17 +24,17 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
-// Routes
+// API Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/notes", noteRoutes);
 
-// Serve frontend in production
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "..", "frontend", "dist");
-  app.use(express.static(frontendPath));
+  const rootPath = path.resolve(__dirname, ".."); // Go from /backend to project root
 
-  app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
+  app.use(express.static(path.join(rootPath, "frontend", "dist")));
+
+  app.get("/*splat", (_req, res) => {
+    res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
   });
 }
 
