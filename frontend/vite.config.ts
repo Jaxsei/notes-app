@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'es2015',
+    target: 'esn2020',
     minify: 'esbuild',
     sourcemap: false,
     cssCodeSplit: true,
