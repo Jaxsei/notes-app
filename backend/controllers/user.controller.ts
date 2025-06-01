@@ -45,9 +45,7 @@ if (!JWT_SECRET) {
 const getCookieOptions = (maxAge: number): import('express').CookieOptions => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none' as const,
-  domain: process.env.NODE_ENV === 'production' ? 'notes-app-mu-teal.vercel.app' : 'localhost',
-  path: '/',
+  sameSite: 'strict' as const,
   maxAge,
 });
 
