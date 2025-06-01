@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "drop": "ts-node utils/scripts/dropCollection.ts"
+    "drop": "node utils/scripts/dropCollection.js"
   },
   "keywords": [],
   "author": "",
