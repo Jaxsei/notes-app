@@ -1,5 +1,5 @@
-const EmailTemplate = (email: string, otp: string) => {
-  return `
+const EmailTemplate = (email, otp) => {
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -396,5 +396,5 @@ const EmailTemplate = (email: string, otp: string) => {
 </html>
 `;
 };
-
 export default EmailTemplate;
+//# sourceMappingURL=EmailTemplate.js.map
