@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === "production") {
 
   app.use(express.static(path.join(rootPath, "frontend", "dist")));
 
-  app.get("/*splat", (_req, res) => {
+  app.get(/^\/(?!api).*/, (_req, res) => {
     res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
   });
 }
