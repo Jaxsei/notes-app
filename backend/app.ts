@@ -28,14 +28,14 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/notes", noteRoutes);
 
+
+const __dirname = path.resolve();
+
 if (process.env.NODE_ENV === "production") {
-  const rootPath = path.resolve(__dirname, ".."); // Go from /backend to project root
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-  app.use(express.static(path.join(rootPath, "frontend", "dist")));
-
-  app.get(/^\/(?!api).*/, (_req, res) => {
-    res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
-
 export { app };
