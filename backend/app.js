@@ -2,15 +2,16 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import { fileURLToPath } from 'url';
-import path from 'path';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config();
+import path from "path";
 import authRoutes from './routes/auth.routes.js';
 import noteRoutes from './routes/note.routes.js';
+
+// Load environment variables
+dotenv.config();
+
 // Create the Express app
 const app = express();
+
 // Middleware
 app.set("trust proxy", 1);
 app.use(cors({
@@ -20,15 +21,17 @@ app.use(cors({
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
+
 // API Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/notes", noteRoutes);
+
 if (process.env.NODE_ENV === "production") {
-    const rootPath = path.join(__dirname, "../../");
-    app.use(express.static(path.join(rootPath, "frontend", "dist")));
+    const __dirnamw = path.resolve(); // This points to project root when run from base dir
+    app.use(express.static(path.join(__dirnamw, "frontend", "dist")));
     app.get(/^\/(?!api).*/, (req, res) => {
-        res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
+        res.sendFile(path.join(__dirnamw, "frontend", "dist", "index.html"));
     });
 }
+
 export { app };
-//# sourceMappingURL=app.js.map
