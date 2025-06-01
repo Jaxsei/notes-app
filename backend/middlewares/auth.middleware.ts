@@ -1,8 +1,8 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { User } from "../models/user.model";
+import { User } from '../models/user.model.js';
 import { Request, Response, NextFunction } from "express";
-import { ApiError } from "../utils/ApiError";
-import { StatusCode } from "../utils/StatusCode";
+import { ApiError } from '../utils/ApiError.js';
+import { StatusCode } from '../utils/StatusCode.js';
 
 // Custom Request type with a typed user object
 interface AuthenticatedRequest extends Request {

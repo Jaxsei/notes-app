@@ -1,8 +1,8 @@
-import { asyncHandler } from '../utils/asyncHandler';
-import { Note } from '../models/note.model';
-import { ApiError } from '../utils/ApiError';
-import { ApiResponse } from '../utils/ApiResponse';
-import { StatusCode } from '../utils/StatusCode';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { Note } from '../models/note.model.js';
+import { ApiError } from '../utils/ApiError.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { StatusCode } from '../utils/StatusCode.js';
 import { Request, Response } from 'express';
 
 

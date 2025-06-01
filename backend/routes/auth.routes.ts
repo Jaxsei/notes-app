@@ -1,9 +1,9 @@
 import express from "express";
-import { registerUser, loginUser, logoutUser, checkAuth, updateProfile } from "../controllers/user.controller";
-import { upload } from "../middlewares/multer.middleware";
-import { RateLimiter } from "../utils/RateLimiter";
-import { sendOtp, verifyOtp } from "../controllers/otp.controller";
-import { protectRoute } from "../middlewares/auth.middleware";
+import { registerUser, loginUser, logoutUser, checkAuth, updateProfile } from '../controllers/user.controller.js';
+import { upload } from '../middlewares/multer.middleware.js';
+import { RateLimiter } from '../utils/RateLimiter.js';
+import { sendOtp, verifyOtp } from '../controllers/otp.controller.js';
+import { protectRoute } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 

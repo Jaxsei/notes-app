@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
-import { ApiError } from "./ApiError";
-import EmailTemplate from "../utils/EmailTemplate";
+import { ApiError } from './ApiError.js';
+import EmailTemplate from '../utils/EmailTemplate.js';
 import dotenv from "dotenv";
 
 dotenv.config();

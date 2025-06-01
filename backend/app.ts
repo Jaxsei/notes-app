@@ -2,12 +2,19 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import path from "path";
+
+
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 dotenv.config();
 
-import authRoutes from "./routes/auth.routes";
-import noteRoutes from "./routes/note.routes";
+import authRoutes from './routes/auth.routes.js';
+import noteRoutes from './routes/note.routes.js';
 
 // Create the Express app
 const app = express();
@@ -28,7 +35,6 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/notes", noteRoutes);
 
-const __dirname = path.resolve();
 
 if (process.env.NODE_ENV === "production") {
   const rootPath = path.join(__dirname, "../../");

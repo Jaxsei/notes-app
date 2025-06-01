@@ -2,12 +2,12 @@ import jwt, { Secret } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 import { Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { StatusCode } from "../utils/StatusCode";
-import { User } from "../models/user.model";
-import { uploadOnCloudinary } from "../utils/cloudinary";
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ApiError } from '../utils/ApiError.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { StatusCode } from '../utils/StatusCode.js';
+import { User } from '../models/user.model.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import dotenv from 'dotenv';
 dotenv.config();
 

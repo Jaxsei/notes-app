@@ -2,8 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only server.js",
     "build": "npm install & tsc",
     "start": "node dist/server.js",
     "drop": "ts-node utils/scripts/dropCollection.ts",

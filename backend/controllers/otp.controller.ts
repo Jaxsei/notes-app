@@ -2,12 +2,12 @@ import { Request, Response } from "express";
 import { Document } from "mongoose";
 import crypto from "crypto";
 
-import { User } from "../models/user.model";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
-import { resendEmail } from "../utils/resendEmails";
-import { StatusCode } from "../utils/StatusCode";
+import { User } from '../models/user.model.js';
+import { ApiError } from '../utils/ApiError.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { resendEmail } from '../utils/resendEmails.js';
+import { StatusCode } from '../utils/StatusCode.js';
 
 // ✅ Custom request type with authenticated user
 interface AuthenticatedRequest extends Request {
