@@ -3,5 +3,5 @@
     "./"
   ],
   "ext": "ts",
-  "exec": "tsx -r dotenv/config server.ts"
+  "exec": "tsx -r dotenv/config server.js"
 }

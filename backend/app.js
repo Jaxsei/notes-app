@@ -6,6 +6,10 @@ import path from "path";
 import authRoutes from './routes/auth.routes.js';
 import noteRoutes from './routes/note.routes.js';
 
+
+const __dirname = path.resolve();
+
+
 // Load environment variables
 dotenv.config();
 
@@ -27,12 +31,10 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/notes", noteRoutes);
 
 if (process.env.NODE_ENV === "production") {
-  const __dirname = path.resolve(path.dirname(new URL(import.meta.url).pathname));
-
-
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
-  app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
 
