@@ -30,13 +30,12 @@ app.use("/api/v1/notes", noteRoutes);
 
 // Serve frontend in production
 if (process.env.NODE_ENV === "production") {
-  const rootPath = path.resolve(); // avoids import.meta.url
-  app.use(express.static(path.join(rootPath, "frontend", "dist")));
+  const frontendPath = path.join(__dirname, "..", "frontend", "dist");
+  app.use(express.static(frontendPath));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
+    res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
 
-export { app }
-
+export { app };
