@@ -2,6 +2,6 @@
   "watch": [
     "./"
   ],
-  "ext": "ts",
-  "exec": "tsx -r dotenv/config server.ts"
+  "ext": "js,json",
+  "exec": "node -r dotenv/config server.js"
 }

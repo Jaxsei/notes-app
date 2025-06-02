@@ -116,7 +116,7 @@ export function AnimatedQuill({ value, onChange, className }) {
     return quillRef.current?.getEditor().getText().trim() || "";
   };
 
-  const plainText = getPlainText() ?? '';
+  const plainText = getPlainText() || '';
 
 
   //Gets Data at startup

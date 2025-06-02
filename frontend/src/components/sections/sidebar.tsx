@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import NuxtakeUI from "../logos/nuxtakeUI";
 import { Button } from "../ui/button";
+import { useNavigate } from "react-router-dom"
 
 // Animation variants for sidebar elements
 const sidebarVariants = {
@@ -118,6 +119,7 @@ const pulseVariants = {
 
 export const NotesSidebar = ({ filterBy, authUser, logout, setFilterBy }) => {
   const [hoveredItem, setHoveredItem] = useState(null);
+  const navigate = useNavigate();
 
   const navItems = [
     {
@@ -276,6 +278,7 @@ export const NotesSidebar = ({ filterBy, authUser, logout, setFilterBy }) => {
               variant="ghost"
               size="sm"
               className="w-full flex flex-col gap-1 h-auto py-3 rounded-xl hover:bg-accent/50 group transition-all duration-300"
+              onClick={() => navigate('/settings')}
             >
               <motion.div
                 whileHover={{ rotate: 90 }}

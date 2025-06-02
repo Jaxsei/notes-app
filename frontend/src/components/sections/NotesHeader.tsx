@@ -472,7 +472,7 @@ export const ProfilesIndicator = ({ authUser }) => {
       />
       <div className="relative">
         <img
-          src={authUser?.avatar || "/api/placeholder/32/32"} // Consider a local placeholder
+          src={authUser?.avatar} // Consider a local placeholder
           alt="Profile"
           className="w-8 h-8 rounded-full border-[1px] border-background relative z-10"
         />
