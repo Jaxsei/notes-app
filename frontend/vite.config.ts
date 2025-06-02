@@ -6,35 +6,60 @@ import { visualizer } from 'rollup-plugin-visualizer';
 export default defineConfig({
   plugins: [
     react(),
-    visualizer({ filename: './dist/stats.html', open: false }),
+    visualizer({
+      filename: './dist/stats.html',
+      open: false,
+    }),
   ],
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
+
+  define: {
+    'process.env.SSR': 'false',
+  },
+
   build: {
     target: 'es2020',
-    minify: 'esbuild',
+    minify: 'terser', // ✅ safer than esbuild for CommonJS interop
     sourcemap: false,
     cssCodeSplit: true,
     chunkSizeWarningLimit: 500,
+
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Group UI components
           if (id.includes('/src/components/ui/')) return 'shadcn';
 
-          // Separate vendor chunks
           if (id.includes('node_modules')) {
-            if (id.includes('react')) return 'react';
-            if (id.includes('framer-motion')) return 'motion';
-            if (id.includes('zustand')) return 'zustand';
-            return 'vendor'; // everything else in node_modules
+            const map = new Map([
+              ['react', 'react'],
+              ['framer-motion', 'motion'],
+              ['zustand', 'zustand'],
+              ['@radix-ui', 'radix'],
+              ['lucide-react', 'icons'],
+            ]);
+
+            for (const [lib, chunkName] of map.entries()) {
+              if (id.includes(lib)) return chunkName;
+            }
+
+            return 'vendor'; // Fallback chunk
           }
 
           return undefined;
         },
+      },
+    },
+  },
+
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
       },
     },
   },

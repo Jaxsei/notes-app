@@ -1,3 +1,4 @@
+
 import React from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -6,6 +7,9 @@ import "./index.css";
 import { ThemeProvider } from "./components/utils/theme-provider";
 import { Toaster } from "react-hot-toast";
 import App from "./app";
+
+
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
