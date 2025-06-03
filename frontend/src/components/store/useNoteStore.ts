@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { axiosInstance } from '../utils/axios';
 
 interface Note {
@@ -43,7 +43,6 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
       const newNote = res.data.data;
       set({ notes: [newNote, ...get().notes] });
       console.log(newNote);
-      toast.success('Note created successfully');
     } catch (error: any) {
       console.error("Create note error:", error);
       toast.error(error?.response?.data?.message || error?.message || "Note creation failed");
@@ -116,7 +115,6 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
         note: updatedNote,
       });
 
-      toast.success('Note updated successfully');
     } catch (error: any) {
       console.error("Update note error:", error);
       toast.error(error?.response?.data?.message || error?.message || "Note update failed");
@@ -136,7 +134,6 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
     try {
       await axiosInstance.delete(`/notes/delete/${id}`);
       set({ notes: get().notes.filter(note => note._id !== id) });
-      toast.success('Note deleted successfully');
     } catch (error: any) {
       console.error("Delete note error:", error);
       toast.error(error?.response?.data?.message || error?.message || "Note deletion failed");

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { axiosInstance } from "../utils/axios";
-import toast from "react-hot-toast";
-
+import { toast } from "sonner";
 // code taken from burakormez from fullstack-chatapp
 
 interface Otp {
@@ -36,6 +35,7 @@ export interface OtpData {
 
 export interface AuthState {
   authUser: User | null;
+  isUpdatingUser: boolean;
   isSigningUp: boolean;
   isLoggingIn: boolean;
   isUpdatingProfile: boolean;
@@ -58,6 +58,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoggingIn: false,
   isUpdatingProfile: false,
   isVerifyingOtp: false,
+  isUpdatingUser: false,
   isSendingOtp: false,
   isCheckingAuth: true,
 
@@ -152,5 +153,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       set({ isSendingOtp: false });
     }
-  }
+  },
+
+  updateUser: async (data: AuthCredentials) => {
+    set({ isUpdatingUser: true });
+    try {
+      const res = await axiosInstance.put<User>("/auth/update-user", data);
+      set({ authUser: res.data });
+      toast.success("User updated successfully");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Update failed");
+    } finally {
+      set({ isUpdatingUser: false });
+    }
+  },
+
 }));
