@@ -5,7 +5,7 @@ import { noteLimiter, getNotesLimiter } from '../utils/NotesRateLimiter.js';
 import { upload } from '../middlewares/multer.middleware.js';
 const router = express.Router();
 // Note Routes 
-router.post('/create', protectRoute, noteLimiter, upload.none(), createNote);
+router.post('/create', protectRoute, noteLimiter, upload.single('thumbnail'), createNote);
 router.get('/get', protectRoute, getNotesLimiter, upload.none(), getNotes);
 router.get('/get/:id', protectRoute, getNotesLimiter, upload.none(), getANote);
 router.put('/update/:id', protectRoute, noteLimiter, upload.none(), updateNote);

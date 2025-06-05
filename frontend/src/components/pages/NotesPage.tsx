@@ -27,7 +27,9 @@ import {
   Download,
   Calendar,
   Loader,
-  FileText
+  FileText,
+  ThumbsUp,
+  X
 } from "lucide-react"; import {
   Popover,
   PopoverContent,
@@ -58,6 +60,8 @@ import { itemVariants, containerVariants, headerVariants, cardHoverVariants, sid
 import { NOTE_COLORS } from "../utils/note-colors";
 import { deltaToText } from "../utils/deltaToText";
 import { exportNoteAsDelta } from "../store/exportNote";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
+import { DialogHeader } from "../ui/dialog";
 
 
 export default function NotesPage() {
@@ -80,6 +84,7 @@ export default function NotesPage() {
   const [viewMode, setViewMode] = useState("grid"); // grid | list
   const [sortBy, setSortBy] = useState("recent"); // recent | title | starred
   const [filterBy, setFilterBy] = useState("all"); // all | starred | folders
+  const [newNoteImage, setNewNoteImage] = useState<File | null>(null);
   const [isCreatePopoverOpen, setIsCreatePopoverOpen] = useState(false);
 
   useEffect(() => {
@@ -113,9 +118,11 @@ export default function NotesPage() {
   const handleCreateNote = useCallback(() => {
     if (!newNoteTitle.trim()) return toast.error('Title is required');
     if (!newNoteContent) return toast.error('Content is required')
-    createNote({ title: newNoteTitle.trim(), content: newNoteContent });
+    if (!newNoteImage) return toast.error('Thumbnail is required')
+    createNote({ title: newNoteTitle.trim(), content: newNoteContent, thumbnail: newNoteImage });
     setNewNoteTitle("");
     setNewNoteContent('');
+    setNewNoteImage(null);
     setIsCreatePopoverOpen(false);
   }, [newNoteTitle, newNoteContent, createNote]);
 
@@ -247,6 +254,7 @@ export default function NotesPage() {
                     <span className="hidden sm:inline">Import</span>
                   </Button>
 
+
                   <Popover open={isCreatePopoverOpen} onOpenChange={setIsCreatePopoverOpen}>
                     <PopoverTrigger asChild>
                       <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 text-xs sm:text-sm">
@@ -255,65 +263,156 @@ export default function NotesPage() {
                         <span className="sm:hidden">New</span>
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80 sm:w-96 bg-background/95 backdrop-blur-sm border-border/50" align="end">
+
+                    <PopoverContent
+                      className="w-[90vw] max-w-[500px] bg-background/95 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl p-0 overflow-hidden"
+                      align="center"
+                      side="bottom"
+                      sideOffset={20}
+                      style={{
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 50
+                      }}
+                    >
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.2 }}
-                        className="space-y-4"
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="p-6 space-y-6 max-h-[80vh] overflow-y-auto"
                       >
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-foreground">Create New Note</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Add a title and content for your new note
+                        {/* Header */}
+                        <div className="space-y-3 pb-2 border-b border-border/30">
+                          <h4 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                            Create New Note
+                          </h4>
+                          <p className="text-muted-foreground text-sm leading-relaxed">
+                            Transform your thoughts into organized notes with rich content and visual appeal.
                           </p>
                         </div>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">Title</label>
+
+                        <div className="space-y-5">
+                          {/* Title Section */}
+                          <div className="space-y-3">
+                            <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-primary/60"></div>
+                              Title
+                            </label>
                             <Input
-                              placeholder="Enter note title..."
+                              placeholder="Give your note a memorable title..."
                               value={newNoteTitle}
                               onChange={(e) => setNewNoteTitle(e.target.value)}
-                              className="bg-background border-border focus:border-primary focus:ring-1 focus:ring-primary"
+                              className="bg-background border-border/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 rounded-xl h-11 px-4 text-base placeholder:text-muted-foreground/60"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">Content</label>
+
+                          {/* Content Section */}
+                          <div className="space-y-3">
+                            <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-primary/60"></div>
+                              Content
+                            </label>
                             <Textarea
-                              placeholder="Write your note content here..."
+                              placeholder="Share your thoughts, ideas, or anything that inspires you..."
                               value={newNoteContent}
                               onChange={(e) => setNewNoteContent(e.target.value)}
-                              className="bg-background border-border focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-none"
+                              className="bg-background border-border/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 rounded-xl min-h-[120px] resize-none px-4 py-3 text-base placeholder:text-muted-foreground/60 leading-relaxed"
                               rows={5}
                             />
                           </div>
-                          <div className="flex justify-end gap-2 pt-2">
+
+                          {/* Thumbnail Section */}
+                          <div className="space-y-3">
+                            <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-primary/60"></div>
+                              Thumbnail
+                              <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
+                            </label>
+
+                            <div className="relative">
+                              <Input
+                                id='thumbnail'
+                                name='thumbnail'
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setNewNoteImage(e.target.files?.[0] || null)}
+                                className="bg-background border-border/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 rounded-xl h-11 px-4 file:bg-primary/10 file:text-primary file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-sm file:font-medium file:mr-3 hover:file:bg-primary/20 file:transition-colors"
+                              />
+                              {newNoteImage && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 5 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-xl"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                                      <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-foreground truncate">
+                                        {newNoteImage.name}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {(newNoteImage.size / 1024 / 1024).toFixed(2)} MB
+                                      </p>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setNewNoteImage(null)}
+                                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive rounded-lg"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex justify-end gap-3 pt-4 border-t border-border/30">
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => setIsCreatePopoverOpen(false)}
-                              className="bg-background hover:bg-accent"
+                              className="bg-background hover:bg-accent border-border/60 hover:border-border rounded-xl px-6 h-11 font-medium transition-all duration-200"
                             >
                               Cancel
                             </Button>
                             <Button
-                              size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleCreateNote({ title: newNoteTitle, content: setNewNoteContent })
+                                handleCreateNote({
+                                  title: newNoteTitle,
+                                  content: newNoteContent,
+                                  thumbnail: newNoteImage
+                                });
                               }}
                               disabled={isCreatingNote || !newNoteTitle.trim()}
-                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                              className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground shadow-lg hover:shadow-xl rounded-xl px-6 h-11 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              {isCreatingNote ? <Loader className="h-4 w-4 animate-spin" /> : "Create Note"}
+                              {isCreatingNote ? (
+                                <div className="flex items-center gap-2">
+                                  <Loader className="h-4 w-4 animate-spin" />
+                                  <span>Creating...</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <Plus className="h-4 w-4" />
+                                  <span>Create Note</span>
+                                </div>
+                              )}
                             </Button>
                           </div>
                         </div>
                       </motion.div>
                     </PopoverContent>
-                  </Popover>
-                </motion.div>
+                  </Popover>                </motion.div>
               </motion.div>
 
               {/* Notes Grid/List */}
@@ -398,53 +497,91 @@ export default function NotesPage() {
                           className="group cursor-pointer h-full"
                         >
                           <Card
+                            key={note._id}
                             className={`
-                          relative h-full overflow-hidden backdrop-blur-sm border-border/50
-                          transition-all duration-300 hover:shadow-lg hover:shadow-primary/5
-                          ${NOTE_COLORS.find(c => c.name === note.color)?.class || NOTE_COLORS[0].class}
-                          hover:border-border
-                        `}
+        group relative h-full overflow-hidden backdrop-blur-md border border-border/30
+        transition-all duration-500 ease-out
+        hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2
+        ${NOTE_COLORS.find(c => c.name === note.color)?.class || NOTE_COLORS[0].class}
+        hover:border-primary/30
+        flex flex-col
+        bg-gradient-to-br from-background/95 to-background/80
+        before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300
+        hover:before:opacity-100
+      `}
                           >
-                            {/* Subtle animated background pattern */}
-                            <div className="absolute inset-0 opacity-5">
-                              <div className="absolute inset-0 bg-gradient-to-br from-current via-transparent to-transparent"></div>
-                            </div>
+                            {/* Thumbnail Section - Enhanced */}
+                            {note?.thumbnail ? (
+                              <div className="relative w-full h-36 flex-shrink-0 overflow-hidden">
+                                <img
+                                  src={note.thumbnail}
+                                  alt="Note cover"
+                                  className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-110"
+                                  loading="lazy"
+                                />
 
-                            <CardHeader className="pb-2 sm:pb-3 relative z-10 flex-none p-3 sm:p-6">
-                              <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                {/* Elegant overlay gradients */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-70 group-hover:opacity-50 transition-opacity duration-300" />
+                                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background via-background/80 to-transparent" />
+
+                                {/* Decorative corner accent */}
+                                <div className="absolute top-3 right-3 w-8 h-8 bg-gradient-to-br from-white/20 to-white/5 rounded-full backdrop-blur-sm border border-white/20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0" />
+                              </div>
+                            ) : (
+                              // Beautiful pattern background for notes without thumbnails
+                              <div className="relative w-full h-36 flex-shrink-0 overflow-hidden bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
+                                <div className="absolute inset-0 opacity-30">
+                                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)]" />
+                                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,119,198,0.1),transparent_50%)]" />
+                                  <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(255,255,255,0.05)_60deg,transparent_120deg)]" />
+                                </div>
+                                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background via-background/80 to-transparent" />
+                              </div>
+                            )}
+
+                            {/* Header Section - Enhanced */}
+                            <CardHeader className="relative z-10 flex-shrink-0 p-4 pb-2">
+                              <div className="flex items-start justify-between gap-3">
                                 <CardTitle
-                                  className="text-sm sm:text-base leading-snug line-clamp-2 sm:line-clamp-3 group-hover:text-primary transition-colors duration-200 cursor-pointer font-semibold"
+                                  className="text-base font-bold leading-tight line-clamp-2 group-hover:text-primary transition-all duration-300 cursor-pointer transform group-hover:translate-x-1"
                                   onClick={(e) => navigate(`/notes/${note._id}`)}
                                 >
                                   {note.title}
                                 </CardTitle>
+
+                                {/* Enhanced star button */}
                                 <motion.div
-                                  whileHover={{ scale: 1.1 }}
+                                  whileHover={{ scale: 1.15, rotate: 10 }}
                                   whileTap={{ scale: 0.9 }}
+                                  className="flex-shrink-0"
                                 >
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className={`h-6 w-6 sm:h-8 sm:w-8 shrink-0 transition-all duration-200 rounded-full ${note.isStarred
-                                      ? "text-yellow-500 hover:text-yellow-600 bg-yellow-500/10"
-                                      : "text-muted-foreground hover:text-yellow-500 hover:bg-yellow-500/10"
+                                    className={`h-8 w-8 rounded-full transition-all duration-300 ${note.isStarred
+                                      ? "text-amber-500 bg-amber-500/15 hover:bg-amber-500/25 shadow-lg shadow-amber-500/20"
+                                      : "text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
                                       }`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleUpdate(note._id, { isStarred: !note.isStarred });
                                     }}
                                   >
-                                    <Star className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${note.isStarred ? "fill-current scale-110" : ""}`} />
+                                    <Star
+                                      className={`h-4 w-4 transition-all duration-300 ${note.isStarred ? "fill-current drop-shadow-sm" : ""
+                                        }`}
+                                    />
                                   </Button>
                                 </motion.div>
                               </div>
 
+                              {/* Content preview with better typography */}
                               {note.content?.ops && (
                                 <motion.p
-                                  className="text-xs sm:text-sm text-muted-foreground line-clamp-3 sm:line-clamp-4 mt-2 sm:mt-3 leading-relaxed"
-                                  initial={{ opacity: 0.8 }}
+                                  className="text-sm text-muted-foreground/80 line-clamp-3 mt-3 leading-relaxed font-medium"
+                                  initial={{ opacity: 0.7 }}
                                   whileHover={{ opacity: 1 }}
-                                  transition={{ duration: 0.2 }}
+                                  transition={{ duration: 0.3 }}
                                 >
                                   {deltaToText(note.content)
                                     .replace(/<[^>]*>/g, '')
@@ -453,30 +590,26 @@ export default function NotesPage() {
                               )}
                             </CardHeader>
 
-                            <CardContent className="pt-0 relative z-10 flex-none mt-auto p-3 sm:p-6 sm:pt-0">
+                            {/* Footer Section - Enhanced */}
+                            <CardContent className="relative z-10 flex-grow flex flex-col justify-end p-4 pt-0">
                               <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <motion.span
-                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full bg-muted/50 font-medium border border-border/30 text-xs"
-                                    whileHover={{ scale: 1.05 }}
-                                  >
-                                    <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                    <span className="hidden sm:inline">
-                                      {new Date(note.updatedAt || note.createdAt).toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                        year: "numeric",
-                                      })}
-                                    </span>
-                                    <span className="sm:hidden">
-                                      {new Date(note.updatedAt || note.createdAt).toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                      })}
-                                    </span>
-                                  </motion.span>
-                                </div>
+                                {/* Beautiful date badge */}
+                                <motion.div
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-muted/80 to-muted/60 backdrop-blur-sm border border-border/50 shadow-sm"
+                                  whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <Calendar className="w-3.5 h-3.5 text-primary/70" />
+                                  <span className="text-xs font-medium text-foreground/80">
+                                    {new Date(note.updatedAt || note.createdAt).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </span>
+                                </motion.div>
 
+                                {/* Enhanced dropdown menu */}
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <motion.div
@@ -486,39 +619,39 @@ export default function NotesPage() {
                                       <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-6 w-6 sm:h-8 sm:w-8 opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full hover:bg-muted/50"
+                                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full hover:bg-muted/60 backdrop-blur-sm border border-border/30 hover:border-border/50"
                                         onClick={(e) => e.stopPropagation()}
                                       >
-                                        <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+                                        <MoreHorizontal className="h-4 w-4" />
                                       </Button>
                                     </motion.div>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent
                                     align="end"
-                                    className="w-44 sm:w-48 bg-background/95 backdrop-blur-sm border-border/50"
+                                    className="w-48 bg-background/95 backdrop-blur-xl border-border/50 shadow-xl rounded-xl p-1"
                                   >
                                     <DropdownMenuItem
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleEdit(note._id);
                                       }}
-                                      className="hover:bg-accent text-sm"
+                                      className="hover:bg-accent/80 rounded-lg transition-colors duration-200 cursor-pointer"
                                     >
-                                      <Edit3 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                                      Edit
+                                      <Edit3 className="h-4 w-4 mr-3 text-primary/70" />
+                                      <span className="font-medium">Edit</span>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuSeparator className="bg-border/50" />
+                                    <DropdownMenuSeparator className="bg-border/30 my-1" />
 
                                     <DropdownMenu>
-                                      <DropdownMenuTrigger className="flex w-full items-center px-2 py-1.5 text-sm hover:bg-accent rounded-sm">
-                                        <Palette className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                                        Change color
+                                      <DropdownMenuTrigger className="flex w-full items-center px-2 py-2 text-sm hover:bg-accent/80 rounded-lg transition-colors duration-200 cursor-pointer">
+                                        <Palette className="h-4 w-4 mr-3 text-primary/70" />
+                                        <span className="font-medium">Change color</span>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent
                                         side="left"
                                         align="start"
-                                        className="bg-background/95 backdrop-blur-sm border-border/50"
+                                        className="bg-background/95 backdrop-blur-xl border-border/50 shadow-xl rounded-xl p-1"
                                       >
                                         {NOTE_COLORS.map((color) => (
                                           <DropdownMenuItem
@@ -527,14 +660,16 @@ export default function NotesPage() {
                                               e.stopPropagation();
                                               handleUpdate(note._id, { color: color.name });
                                             }}
-                                            className="hover:bg-accent text-sm"
+                                            className="hover:bg-accent/80 rounded-lg transition-colors duration-200 cursor-pointer"
                                           >
                                             <motion.div
-                                              className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2 border ${color.class}`}
+                                              className={`w-4 h-4 rounded-full mr-3 border-2 border-white/20 shadow-sm ${color.class}`}
                                               whileHover={{ scale: 1.2 }}
-                                              transition={{ duration: 0.1 }}
+                                              transition={{ duration: 0.15 }}
                                             />
-                                            {color.name.charAt(0).toUpperCase() + color.name.slice(1)}
+                                            <span className="font-medium">
+                                              {color.name.charAt(0).toUpperCase() + color.name.slice(1)}
+                                            </span>
                                           </DropdownMenuItem>
                                         ))}
                                       </DropdownMenuContent>
@@ -545,36 +680,38 @@ export default function NotesPage() {
                                         e.stopPropagation();
                                         handleExport(note);
                                       }}
-                                      className="hover:bg-accent text-sm"
+                                      className="hover:bg-accent/80 rounded-lg transition-colors duration-200 cursor-pointer"
                                     >
-                                      <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                                      Export
+                                      <Download className="h-4 w-4 mr-3 text-primary/70" />
+                                      <span className="font-medium">Export</span>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuSeparator className="bg-border/50" />
+                                    <DropdownMenuSeparator className="bg-border/30 my-1" />
 
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
                                         <DropdownMenuItem
-                                          className="text-destructive focus:text-destructive hover:bg-destructive/10 text-sm"
+                                          className="text-destructive focus:text-destructive hover:bg-destructive/10 rounded-lg transition-colors duration-200 cursor-pointer font-medium"
                                           onSelect={(e) => e.preventDefault()}
                                         >
-                                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                                          <Trash2 className="h-4 w-4 mr-3" />
                                           Delete
                                         </DropdownMenuItem>
                                       </AlertDialogTrigger>
-                                      <AlertDialogContent className="bg-background/95 backdrop-blur-sm border-border/50 mx-4 sm:mx-0">
+                                      <AlertDialogContent className="bg-background/95 backdrop-blur-xl border-border/50 mx-4 sm:mx-0 rounded-2xl shadow-2xl">
                                         <AlertDialogHeader>
-                                          <AlertDialogTitle className="text-base sm:text-lg">Delete Note</AlertDialogTitle>
-                                          <AlertDialogDescription className="text-sm">
+                                          <AlertDialogTitle className="text-lg font-bold">Delete Note</AlertDialogTitle>
+                                          <AlertDialogDescription className="text-muted-foreground">
                                             Are you sure you want to delete "{note.title}"? This action cannot be undone.
                                           </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                                          <AlertDialogCancel className="bg-background hover:bg-accent">Cancel</AlertDialogCancel>
+                                          <AlertDialogCancel className="bg-background hover:bg-accent rounded-xl font-medium">
+                                            Cancel
+                                          </AlertDialogCancel>
                                           <AlertDialogAction
                                             onClick={() => handleDelete(note._id)}
-                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl font-medium shadow-lg"
                                           >
                                             Delete
                                           </AlertDialogAction>
@@ -585,8 +722,10 @@ export default function NotesPage() {
                                 </DropdownMenu>
                               </div>
                             </CardContent>
-                          </Card>
-                        </motion.div>
+
+                            {/* Subtle animation line at bottom */}
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          </Card>                        </motion.div>
                       </motion.div>
                     ))}
                   </AnimatePresence>

@@ -8,6 +8,7 @@ interface Note {
   content: any;
   updatedAt: string;
   createdAt: string;
+  thumbnail: File;
   owner: string;
   isStarred: boolean;
   color: string;
@@ -39,7 +40,11 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
     set({ isCreatingNote: true });
 
     try {
-      const res = await axiosInstance.post('/notes/create', data);
+      const res = await axiosInstance.post('/notes/create', data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       const newNote = res.data.data;
       set({ notes: [newNote, ...get().notes] });
       console.log(newNote);
