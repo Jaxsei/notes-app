@@ -14,4 +14,13 @@ router.post("/sendotp", protectRoute, RateLimiter(3), upload.none(), sendOtp);
 router.post("/verifyotp", protectRoute, RateLimiter(3), upload.none(), verifyOtp);
 router.put('/update-profile', protectRoute, RateLimiter(10), upload.single('avatar'), updateProfile);
 router.put('/update-user', protectRoute, RateLimiter(10), upload.none(), updateUser)
+
+router.get("/get", (req, res)=> {
+  res.status(200).json({"message": "Hello from Nuxtake Backend"})
+})
+
+router.post("/post", (req, res)=>{
+  res.status(200).json(req.body)
+})
+
 export default router;

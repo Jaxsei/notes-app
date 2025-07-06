@@ -6,7 +6,7 @@ import { MongoClient } from 'mongodb';
 // usefull for starting over
 // enter 'npm run drop' tp run this cmd
 //                       Enter collection name here
-const COLLECTION_NAME = 'note'; // fallback name
+const COLLECTION_NAME = 'notes'; // fallback name
 if (!process.env.MONGODB_URI) {
     console.error('❌ MONGODB_URI is not defined in .env');
     process.exit(1);

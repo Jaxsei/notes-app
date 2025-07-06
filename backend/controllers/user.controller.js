@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import validator from "validator";
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
@@ -8,25 +7,27 @@ import { StatusCode } from '../utils/StatusCode.js';
 import { User } from '../models/user.model.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import dotenv from 'dotenv';
+import { z } from "zod";
+import validate from "../utils/Validation.js";
 dotenv.config();
-// ─────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────
+
+
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || "15m";
 const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || "7d";
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined in environment variables.");
+if (!JWT_SECRET || !ACCESS_TOKEN_EXPIRY || !REFRESH_TOKEN_EXPIRY) {
+  throw new Error("SECRET is not defined in environment variables.");
 }
+
+
 const getCookieOptions = (maxAge) => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict',
   maxAge,
 });
-// ─────────────────────────────────────────────
-// Token Generator
-// ─────────────────────────────────────────────
+
+
 export const generateTokens = (userId) => {
   if (!userId)
     throw new Error("generateTokens: userId is required.");
@@ -36,48 +37,29 @@ export const generateTokens = (userId) => {
 
   const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
+  if (!refreshToken || !accessToken) {
+    throw new Error("generateTokens: failed")
+  }
 
   return { accessToken, refreshToken };
 };
 
 
-
-// ─────────────────────────────────────────────
-// Register
-// ─────────────────────────────────────────────
-
+const validateSchema = z.object({
+  email: z.string().email(),
+  username: z.string().min(5).toLowerCase(),
+  password: z.string().min(8).toLowerCase(),
+})
 
 
 export const registerUser = asyncHandler(async (req, res) => {
-  let { email, username, password } = req.body;
 
-
-  if ([email, username, password].some((field) => !field?.trim())) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
-  }
-
-
-  email = email.toLowerCase();
-  username = username.toLowerCase();
-
-
-  if (!validator.isEmail(email)) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "Invalid email format");
-  }
-  if (username.length < 4) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "Username must be at least 4 characters");
-  }
-  if (password.length < 8) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "Password must be at least 8 characters");
-  }
-
+  let { username, password, email } = validate(validateSchema, req.body)
 
   const existingUser = await User.findOne({ $or: [{ email }, { username }] });
   if (existingUser) {
     throw new ApiError(StatusCode.CONFLICT, "User already exists with the provided email or username");
   }
-
-
 
   if (!req.file?.buffer) {
     throw new ApiError(StatusCode.BAD_REQUEST, "Avatar file is required");
@@ -113,16 +95,11 @@ export const registerUser = asyncHandler(async (req, res) => {
     },
   }, "User registered successfully"));
 });
-// ─────────────────────────────────────────────
-// Login
-// ─────────────────────────────────────────────
+
+
+
 export const loginUser = asyncHandler(async (req, res) => {
-  const { email, username, password } = req.body;
-
-
-  if ([email, username, password].some((field) => !field?.trim())) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
-  }
+  let { username, password, email } = validate(validateSchema, req.body)
 
 
   const user = await User.findOne({
@@ -133,7 +110,6 @@ export const loginUser = asyncHandler(async (req, res) => {
   if (!user || !(await bcrypt.compare(password, user.password))) {
     throw new ApiError(StatusCode.BAD_REQUEST, "Invalid credentials");
   }
-
 
 
   const { accessToken, refreshToken } = generateTokens(user._id.toString());
@@ -154,11 +130,6 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 
-// ─────────────────────────────────────────────
-// Logout
-// ─────────────────────────────────────────────
-
-
 
 export const logoutUser = asyncHandler(async (_req, res) => {
   res.clearCookie("refreshToken", getCookieOptions(0));
@@ -167,15 +138,11 @@ export const logoutUser = asyncHandler(async (_req, res) => {
 });
 
 
-// ─────────────────────────────────────────────
-// Check Auth
-// ─────────────────────────────────────────────
-
 
 export const checkAuth = asyncHandler(async (req, res) => {
 
   if (!req.user) {
-    throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
+    throw new ApiError(StatusCode.Unauthorized, 'User not found')
   }
 
   console.log('successfully checked for auth');
@@ -183,26 +150,15 @@ export const checkAuth = asyncHandler(async (req, res) => {
 });
 
 
-// ─────────────────────────────────────────────
-// Update Profile
-// ─────────────────────────────────────────────
 
+const updateProfileSchema = validateSchema.omit({ password: true })
 
 export const updateProfile = asyncHandler(async (req, res) => {
-  let { email, username } = req.body;
+  let { username, email } = validate(updateProfileSchema, req.body)
 
   if (!req.user?._id) {
     throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
   }
-
-
-  if ([email, username].some((field) => !field?.trim())) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
-  }
-
-
-  email = email.toLowerCase();
-  username = username.toLowerCase();
 
   const user = await User.findOne({ $or: [{ email }, { username }] });
 
@@ -242,22 +198,14 @@ export const updateProfile = asyncHandler(async (req, res) => {
 });
 
 export const updateUser = asyncHandler(async (req, res) => {
-  const { email, username } = req.body;
+  let { username, email } = validate(updateProfileSchema, req.body)
 
   if (!req.user?._id) {
     throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
   }
 
-  if ([email, username].some((field) => !field?.trim())) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "All fields are required");
-  }
-
-  const normalizedEmail = email.toLowerCase();
-  const normalizedUsername = username.toLowerCase();
-
-  // Ensure new email/username is not used by someone else
   const existingUser = await User.findOne({
-    $or: [{ email: normalizedEmail }, { username: normalizedUsername }],
+    $or: [{ email: email }, { username: username }],
     _id: { $ne: req.user._id }
   });
 
@@ -271,8 +219,8 @@ export const updateUser = asyncHandler(async (req, res) => {
     throw new ApiError(StatusCode.NOT_FOUND, "User not found");
   }
 
-  user.email = normalizedEmail;
-  user.username = normalizedUsername;
+  user.email = email;
+  user.username = username;
 
   await user.save();
 
