@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { toast } from 'sonner';
-import { axiosInstance } from '../utils/axios';
+import { create } from "zustand";
+import { toast } from "react-hot-toast";
+import { axiosInstance } from "../utils/axios";
 
 interface Note {
   _id: string;
@@ -32,7 +32,7 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
   note: null,
 
   createNote: async (data) => {
-    if (!data || typeof data !== 'object' || !data.title?.trim()) {
+    if (!data || typeof data !== "object" || !data.title?.trim()) {
       toast.error("Note must have a valid title");
       return;
     }
@@ -40,7 +40,7 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
     set({ isCreatingNote: true });
 
     try {
-      const res = await axiosInstance.post('/notes/create', data, {
+      const res = await axiosInstance.post("/notes/create", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -50,7 +50,11 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
       console.log(newNote);
     } catch (error: any) {
       console.error("Create note error:", error);
-      toast.error(error?.response?.data?.message || error?.message || "Note creation failed");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Note creation failed",
+      );
     } finally {
       set({ isCreatingNote: false });
     }
@@ -60,12 +64,16 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
     set({ isNoteLoading: true });
 
     try {
-      const res = await axiosInstance.get('/notes/get');
+      const res = await axiosInstance.get("/notes/get");
       const fetchedNotes = res.data.data;
       set({ notes: fetchedNotes });
     } catch (error: any) {
       console.error("Get notes error:", error);
-      toast.error(error?.response?.data?.message || error?.message || "Note fetching failed");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Note fetching failed",
+      );
     } finally {
       set({ isNoteLoading: false });
     }
@@ -80,7 +88,11 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
       set({ note: fetchedNote });
     } catch (error: any) {
       console.error("Get note error:", error);
-      toast.error(error?.response?.data?.message || error?.message || "Note fetching failed");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Note fetching failed",
+      );
     } finally {
       set({ isNoteLoading: false });
     }
@@ -97,8 +109,10 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
       return;
     }
 
-    const validFields = ['title', 'content', 'isStarred', 'color'];
-    const hasValidFields = Object.keys(data).some(field => validFields.includes(field));
+    const validFields = ["title", "content", "isStarred", "color"];
+    const hasValidFields = Object.keys(data).some((field) =>
+      validFields.includes(field),
+    );
     if (!hasValidFields) {
       toast.error("Update contains invalid fields");
       return;
@@ -112,17 +126,19 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
       const res = await axiosInstance.put(`/notes/update/${id}`, data);
       const updatedNote = res.data.data;
 
-
       set({
-        notes: get().notes.map(note =>
-          note._id === updatedNote._id ? { ...note, ...updatedNote } : note
+        notes: get().notes.map((note) =>
+          note._id === updatedNote._id ? { ...note, ...updatedNote } : note,
         ),
         note: updatedNote,
       });
-
     } catch (error: any) {
       console.error("Update note error:", error);
-      toast.error(error?.response?.data?.message || error?.message || "Note update failed");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Note update failed",
+      );
     } finally {
       set({ isNoteLoading: false });
     }
@@ -138,12 +154,17 @@ export const useNoteStore = create<NoteStore>((set, get) => ({
 
     try {
       await axiosInstance.delete(`/notes/delete/${id}`);
-      set({ notes: get().notes.filter(note => note._id !== id) });
+      set({ notes: get().notes.filter((note) => note._id !== id) });
     } catch (error: any) {
       console.error("Delete note error:", error);
-      toast.error(error?.response?.data?.message || error?.message || "Note deletion failed");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Note deletion failed",
+      );
     } finally {
       set({ isNoteLoading: false });
     }
   },
 }));
+

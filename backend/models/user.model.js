@@ -10,7 +10,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: [4, "Username must be at least 4 characters"],
       maxlength: [20, "Username must be under 20 characters"],
-      match: [/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"]
+      match: [
+        /^[a-zA-Z0-9_]+$/,
+        "Username can only contain letters, numbers, and underscores",
+      ],
     },
     email: {
       type: String,
@@ -18,34 +21,34 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/.+@.+\..+/, "Please enter a valid email address"]
+      match: [/.+@.+\..+/, "Please enter a valid email address"],
     },
     avatar: {
       type: String, // Cloudinary URL or path
-      required: [true, "Avatar URL is required"]
+      required: [true, "Avatar URL is required"],
     },
     password: {
       type: String,
       required: [true, "Password is required"],
-      minlength: [8, "Password must be at least 8 characters"]
+      minlength: [8, "Password must be at least 8 characters"],
     },
     isVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
     otp: {
       code: {
         type: String,
-        select: false // prevent sending it back in API responses
+        select: false, // prevent sending it back in API responses
       },
       expiresAt: {
         type: Date,
-        select: false
-      }
-    }
+        select: false,
+      },
+    },
   },
   { timestamps: true }
 );
 
-
 export const User = mongoose.model("User", userSchema);
+
