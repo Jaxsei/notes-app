@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useNoteStore } from "../store/useNoteStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { exportNoteAsDelta } from "../store/exportNote";
+import { exportNoteAsDelta } from "../utils/exportNote";
 
 interface UseNotesOptions {
   searchQuery?: string;

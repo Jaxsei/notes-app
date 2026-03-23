@@ -14,7 +14,6 @@ import {
   X,
 } from "lucide-react";
 import NuxtakeUI from "../logos/nuxtakeUI";
-import { useState } from "react";
 import { deltaToText } from "../utils/deltaToText";
 import {
   DropdownMenu,

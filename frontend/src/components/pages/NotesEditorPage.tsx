@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ModeToggle } from "../utils/mode-toggle"
-import Quill from 'react-quill'
-import ReactQuill from "react-quill"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ModeToggle } from "../utils/mode-toggle";
+import Quill from "react-quill";
+import ReactQuill from "react-quill";
 import {
   ArrowLeft,
   Share2,
@@ -13,25 +13,24 @@ import {
   Trash2,
   Download,
   Save,
-  Repeat
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+  Repeat,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
-
-import { ProfilesIndicator } from "../sections/NotesHeader"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { Link, useNavigate, useParams } from "react-router-dom"
-import { useNoteStore } from "../store/useNoteStore"
-import { useAuthStore } from "../store/useAuthStore"
-import { exportNoteAsDelta } from "../store/exportNote"
-import { toast } from "sonner"
+import { ProfilesIndicator } from "../sections/NotesHeader";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNoteStore } from "../store/useNoteStore";
+import { useAuthStore } from "../store/useAuthStore";
+import { exportNoteAsDelta } from "../utils/exportNote";
+import { toast } from "sonner";
 
 // Mock ReactQuill component with enhanced styling
 const modules = {
@@ -40,35 +39,35 @@ const modules = {
     ["bold", "italic", "underline", "code"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["link"],
-    ["clean"]
-  ]
+    ["clean"],
+  ],
 };
 const formats = [
   "header",
-  "bold", "italic", "underline", "code",
-  "list", "bullet",
-  "link"
+  "bold",
+  "italic",
+  "underline",
+  "code",
+  "list",
+  "bullet",
+  "link",
 ];
 
-
-
 const formatDate = (date) => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 const formatTime = (date) => {
-  return date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  })
-}
-
-
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 export function AnimatedQuill({ value, onChange, className }) {
   const MemoizedQuill = useMemo(() => Quill, []); // Avoid SSR issues
@@ -91,35 +90,28 @@ export function AnimatedQuill({ value, onChange, className }) {
       />
     </motion.div>
   );
+}
+export default function NoteEditorPage() {
+  const [noteTitle, setNoteTitle] = useState<any>("");
+  const [noteContent, setNoteContent] = useState("Untitled note");
+  const [saved, setSaved] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
+  const [autoSaving, setAutoSaving] = useState(false);
 
-
-
-
-} export default function NoteEditorPage() {
-  const [noteTitle, setNoteTitle] = useState<any>("")
-  const [noteContent, setNoteContent] = useState("Untitled note")
-  const [saved, setSaved] = useState(false)
-  const [wordCount, setWordCount] = useState(0)
-  const [autoSaving, setAutoSaving] = useState(false)
-
-  const { note, getANote, updateNote, deleteNote, isNoteLoading } = useNoteStore();
+  const { note, getANote, updateNote, deleteNote, isNoteLoading } =
+    useNoteStore();
   const { authUser } = useAuthStore();
   const { id } = useParams();
 
-
   const quillRef = useRef<ReactQuill>(null);
   const navigate = useNavigate();
-
-
-
 
   // Converts delta format into plaintext
   const getPlainText = () => {
     return quillRef.current?.getEditor().getText().trim() || "";
   };
 
-  const plainText = getPlainText() || '';
-
+  const plainText = getPlainText() || "";
 
   //Gets Data at startup
   useEffect(() => {
@@ -137,7 +129,8 @@ export function AnimatedQuill({ value, onChange, className }) {
   useEffect(() => {
     if (!autoSaving) return;
 
-    const hasContent = plainText?.trim() || noteTitle.trim() !== "Untitled Note";
+    const hasContent =
+      plainText?.trim() || noteTitle.trim() !== "Untitled Note";
     if (!hasContent) return;
 
     const toastId = toast.loading("Auto-saving...");
@@ -160,7 +153,6 @@ export function AnimatedQuill({ value, onChange, className }) {
     };
   }, [noteContent, noteTitle, autoSaving]);
 
-
   //Word count/ Not accurate
   useEffect(() => {
     const quill = quillRef.current?.getEditor();
@@ -172,47 +164,51 @@ export function AnimatedQuill({ value, onChange, className }) {
         .replace(/\n/g, " ") // replace newlines with spaces
         .trim()
         .split(/\s+/) // split by any whitespace
-        .filter(word => word.length > 0).length;
+        .filter((word) => word.length > 0).length;
 
       setWordCount(wordCount);
     };
 
-    quill.on('text-change', handleTextChange);
+    quill.on("text-change", handleTextChange);
 
     return () => {
-      quill.off('text-change', handleTextChange);
+      quill.off("text-change", handleTextChange);
     };
   }, []);
 
-
   //handle functions
   const handleSave = () => {
-    setSaved(true)
+    setSaved(true);
     handleUpdate(id, { title: noteTitle, content: noteContent });
-    setTimeout(() => setSaved(false), 2000)
-  }
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   const handleShare = () => {
-    navigator.clipboard?.writeText(`${noteTitle}\n\n${noteContent}`)
-  }
+    navigator.clipboard?.writeText(`${noteTitle}\n\n${noteContent}`);
+  };
 
-  const handleUpdate = useCallback((noteId, data) => {
-    updateNote(noteId, data)
-  }, [updateNote])
+  const handleUpdate = useCallback(
+    (noteId, data) => {
+      updateNote(noteId, data);
+    },
+    [updateNote],
+  );
 
   // Event handlers
-  const handleDelete = useCallback((id) => {
-    deleteNote(id);
-    navigate('/home')
-  }, [deleteNote]);
+  const handleDelete = useCallback(
+    (id) => {
+      deleteNote(id);
+      navigate("/home");
+    },
+    [deleteNote],
+  );
 
-  const handleExport = useCallback((note) => {
-    exportNoteAsDelta(note)
-  }, [note])
-
-
-
-
+  const handleExport = useCallback(
+    (note) => {
+      exportNoteAsDelta(note);
+    },
+    [note],
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -226,7 +222,7 @@ export function AnimatedQuill({ value, onChange, className }) {
           transition={{
             duration: 20,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
           className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-gradient-to-br from-primary/5 to-accent/5 rounded-full blur-3xl"
         />
@@ -238,7 +234,7 @@ export function AnimatedQuill({ value, onChange, className }) {
           transition={{
             duration: 25,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
           className="absolute -bottom-20 -left-20 sm:-bottom-40 sm:-left-40 w-48 h-48 sm:w-96 sm:h-96 bg-gradient-to-tr from-secondary/5 to-primary/5 rounded-full blur-3xl"
         />
@@ -252,12 +248,13 @@ export function AnimatedQuill({ value, onChange, className }) {
         className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/50"
       >
         <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Link to='/home'>
-              <Button variant="ghost" size="icon" className="hover:bg-accent/50 h-8 w-8 sm:h-10 sm:w-10">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link to="/home">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-accent/50 h-8 w-8 sm:h-10 sm:w-10"
+              >
                 <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
@@ -274,7 +271,11 @@ export function AnimatedQuill({ value, onChange, className }) {
                 >
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full"
                   />
                   Auto-saving...
@@ -286,29 +287,44 @@ export function AnimatedQuill({ value, onChange, className }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-7 w-7 sm:h-8 sm:w-8 shrink-0 transition-all duration-200 rounded-full ${note?.isStarred
-                  ? "text-yellow-500 hover:text-yellow-600 bg-yellow-500/10"
-                  : "text-muted-foreground hover:text-yellow-500 hover:bg-yellow-500/10"
-                  }`}
+                className={`h-7 w-7 sm:h-8 sm:w-8 shrink-0 transition-all duration-200 rounded-full ${
+                  note?.isStarred
+                    ? "text-yellow-500 hover:text-yellow-600 bg-yellow-500/10"
+                    : "text-muted-foreground hover:text-yellow-500 hover:bg-yellow-500/10"
+                }`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleUpdate(id, { isStarred: !note?.isStarred });
                 }}
               >
-                <Star className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${note?.isStarred ? "fill-current scale-110" : ""}`} />
+                <Star
+                  className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${note?.isStarred ? "fill-current scale-110" : ""}`}
+                />
               </Button>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button onClick={handleShare} variant="ghost" size="icon" className="hover:bg-accent/50 h-7 w-7 sm:h-8 sm:w-8">
+              <Button
+                onClick={handleShare}
+                variant="ghost"
+                size="icon"
+                className="hover:bg-accent/50 h-7 w-7 sm:h-8 sm:w-8"
+              >
                 <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </motion.div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button variant="ghost" size="icon" className="hover:bg-accent/50 h-7 w-7 sm:h-8 sm:w-8">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-accent/50 h-7 w-7 sm:h-8 sm:w-8"
+                  >
                     <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </motion.div>
@@ -318,24 +334,31 @@ export function AnimatedQuill({ value, onChange, className }) {
                   <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Save Note
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  exportNoteAsDelta(note);
-                }} className="text-sm">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    exportNoteAsDelta(note);
+                  }}
+                  className="text-sm"
+                >
                   <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Export
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  setAutoSaving(!autoSaving)
-                }} className="text-sm">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setAutoSaving(!autoSaving);
+                  }}
+                  className="text-sm"
+                >
                   <Repeat className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Auto Save
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive text-sm"
+                <DropdownMenuItem
+                  className="text-destructive text-sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDelete(id)
+                    handleDelete(id);
                   }}
                 >
                   <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -357,7 +380,9 @@ export function AnimatedQuill({ value, onChange, className }) {
           transition={{ delay: 0.2 }}
           className="px-3 sm:px-4 md:px-6 pb-2 sm:pb-3 text-xs text-muted-foreground flex items-center justify-between"
         >
-          <span className="truncate">{format(new Date(), "MMM d, yyyy")} · Personal</span>
+          <span className="truncate">
+            {format(new Date(), "MMM d, yyyy")} · Personal
+          </span>
           <span className="ml-2 shrink-0">{wordCount} words</span>
         </motion.div>
       </motion.header>
@@ -453,5 +478,6 @@ Fix: The text stops appearing after a certain length
         </motion.div>
       </main>
     </div>
-  )
+  );
 }
+

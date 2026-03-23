@@ -25,14 +25,14 @@ import {
 
 import { useAuthStore } from "./../store/useAuthStore";
 import { useNoteStore } from "./../store/useNoteStore";
-import { itemVariants, containerVariants } from "../store/animationVariants";
-import { useNotes } from "../controllers/note.controller";
+import { itemVariants, containerVariants } from "../utils/animationVariants";
+import { useNotes } from "../hooks/useNoteHook";
 import {
   AvatarHolder,
   CreateModal,
   NoteCard,
   Sidebar,
-} from "../methods/NotePageMethods";
+} from "../services/NoteServices";
 
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 export default function NotesPage() {
