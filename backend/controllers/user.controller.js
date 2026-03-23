@@ -15,6 +15,7 @@ import {
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_EXPIRY,
   JWT_SECRET,
+  getCookieOptions,
   endOfProcess,
 } from "../utils/credentials.js";
 
