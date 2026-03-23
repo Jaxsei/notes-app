@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -6,49 +5,38 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { StatusCode } from "../utils/StatusCode.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import dotenv from "dotenv";
-import { z } from "zod";
 import validate from "../utils/Validation.js";
-dotenv.config();
+import {
+  updateProfileSchema,
+  validateSchema,
+} from "../schemas/user.schemas.js";
+import {
+  generateTokens,
+  ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_EXPIRY,
+  JWT_SECRET,
+  endOfProcess,
+} from "../utils/credentials.js";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY;
-const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY;
 if (!JWT_SECRET || !ACCESS_TOKEN_EXPIRY || !REFRESH_TOKEN_EXPIRY) {
   throw new Error("SECRET is not defined in environment variables.");
 }
 
-const getCookieOptions = (maxAge) => ({
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
-  maxAge,
-});
-
-export const generateTokens = (userId) => {
-  if (!userId) throw new Error("generateTokens: userId is required.");
-  const payload = { userId };
-
-  const accessToken = jwt.sign(payload, JWT_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRY,
-  });
-
-  const refreshToken = jwt.sign(payload, JWT_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRY,
-  });
-
-  if (!refreshToken || !accessToken) {
-    throw new Error("generateTokens: failed");
-  }
-
-  return { accessToken, refreshToken };
-};
-
-const validateSchema = z.object({
-  email: z.string().email(),
-  username: z.string().min(5).toLowerCase(),
-  password: z.string().min(8).toLowerCase(),
-});
+/**
+ *
+ * @route POST /auth/signup
+ * @desc Registers a new User
+ * @access Public
+ *
+ * @param {Object} req.body - Incoming request data
+ * @param {string} req.body.username - User's username
+ * @param {string} req.body.email - User's email
+ * @param {string} req.body.password - User's password
+ * @param {Express.Multer.File} [req.file] - Avatar image file (optional)
+ *
+ * @returns {Promise<ApiResponse>} Returns created user wrapped in ApiResponse
+ * @throws {ApiError} If validation fails or user creation fails
+ */
 
 export const registerUser = asyncHandler(async (req, res) => {
   let { username, password, email } = validate(validateSchema, req.body);
@@ -83,11 +71,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   });
 
   const { accessToken, refreshToken } = generateTokens(user._id.toString());
-  res.cookie(
-    "refreshToken",
-    refreshToken,
-    getCookieOptions(14 * 24 * 60 * 60 * 1000)
-  );
+  res.cookie("refreshToken", refreshToken, getCookieOptions(endOfProcess));
   console.log("successfully registered User");
   res.status(StatusCode.OK).json(
     new ApiResponse(
@@ -106,6 +90,21 @@ export const registerUser = asyncHandler(async (req, res) => {
     )
   );
 });
+
+/**
+ *
+ * @route POST /auth/login
+ * @desc Logs in the User
+ * @access Public
+ *
+ * @param {Object} req.body - Incoming request data
+ * @param {string} req.body.username - User's username
+ * @param {string} req.body.email - User's email
+ * @param {string} req.body.password - User's password
+ *
+ * @returns {Promise<ApiResponse>} Returns login user  wrapped in ApiResponse
+ * @throws {ApiError} If validation fails or user creation fails
+ */
 
 export const loginUser = asyncHandler(async (req, res) => {
   let { username, password, email } = validate(validateSchema, req.body);
@@ -144,6 +143,19 @@ export const loginUser = asyncHandler(async (req, res) => {
   );
 });
 
+/**
+ *
+ * @route POST /auth/logout
+ * @desc Logs out the user
+ * @access Private
+ *
+ * @param {import("express").Request} req - Express request object
+ * @param {import("express").Response} res - Express response object
+ *
+ * @returns {Promise<void>}
+ * @throws {ApiError} If logout fails
+ */
+
 export const logoutUser = asyncHandler(async (_req, res) => {
   res.clearCookie("refreshToken", getCookieOptions(0));
   console.log("User logout successfully");
@@ -152,87 +164,151 @@ export const logoutUser = asyncHandler(async (_req, res) => {
     .json(new ApiResponse(StatusCode.OK, null, "Logged out successfully"));
 });
 
+/**
+ *
+ * @route POST /auth/check
+ * @desc checks for authenticated User
+ * @access Private
+ *
+ * @param {import("express").Request} req - Express request object (expects req.user from auth middleware)
+ * @param {import("express").Response} res - Express response object
+ *
+ * @returns {Promise<void>}
+ * @throws {ApiError} If user is not authenticated
+ */
 export const checkAuth = asyncHandler(async (req, res) => {
   if (!req.user) {
     throw new ApiError(StatusCode.Unauthorized, "User not found");
   }
 
   console.log("successfully checked for auth");
+
   res.status(StatusCode.OK).json(req.user);
 });
 
-const updateProfileSchema = validateSchema.omit({ password: true });
+/**
+ * @route   PUT /auth/update-profile
+ * @desc    Update user's Profile picture
+ * @access  Private
+ *
+ * @param {import("express").Request & { user?: any }} req - Express request (requires req.user from auth middleware)
+ * @param {import("express").Response} res - Express response object
+ *
+ * @returns {Promise<void>}
+ * @throws {ApiError} If validation fails, user not found, or update fails
+ */
 
 export const updateProfile = asyncHandler(async (req, res) => {
-  let { username, email } = validate(updateProfileSchema, req.body);
+  const { username, email } = validate(updateProfileSchema, req.body);
 
-  if (!req.user?._id) {
+  const userId = req.user?._id;
+  if (!userId) {
     throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
   }
 
-  const user = await User.findOne({ $or: [{ email }, { username }] });
-
+  // Find current user
+  const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(StatusCode.NOT_FOUND, "User not found");
   }
 
-  if (!req.file?.buffer) {
-    throw new ApiError(StatusCode.BAD_REQUEST, "Avatar is required");
-  }
+  // Check for duplicate username/email (excluding current user)
+  const existingUser = await User.findOne({
+    $or: [{ email }, { username }],
+    _id: { $ne: userId },
+  });
 
-  const avatar = await uploadOnCloudinary(req.file.buffer, username);
-  if (!avatar?.url) {
+  if (existingUser) {
     throw new ApiError(
-      StatusCode.INTERNAL_SERVER_ERROR,
-      "Failed to upload avatar"
+      StatusCode.BAD_REQUEST,
+      "Email or username already in use"
     );
   }
 
-  console.log("Image upload successfully");
+  // Handle avatar (optional)
+  let avatarUrl = user.avatar;
 
-  user.email = email;
+  if (req.file?.buffer) {
+    const uploaded = await uploadOnCloudinary(req.file.buffer, username);
+
+    if (!uploaded?.url) {
+      throw new ApiError(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        "Failed to upload avatar"
+      );
+    }
+
+    avatarUrl = uploaded.url;
+  }
+
+  // Update fields
   user.username = username;
-  user.avatar = avatar.url;
+  user.email = email;
+  user.avatar = avatarUrl;
 
   await user.save();
 
-  res.status(StatusCode.OK).json({
-    _id: user._id,
-    email: user.email,
-    username: user.username,
-    avatar: user.avatar,
-    isVerified: user.isVerified,
-  });
+  res.status(StatusCode.OK).json(
+    new ApiResponse(
+      StatusCode.OK,
+      {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar,
+        isVerified: user.isVerified,
+      },
+      "Profile updated successfully"
+    )
+  );
 });
 
+/**
+ * @route   PUT /auth/update-user
+ * @desc    Update user's basic info (username, email)
+ * @access  Private
+ *
+ * @param {Object} req.body
+ * @param {string} req.body.username - New username
+ * @param {string} req.body.email - New email
+ *
+ * @returns {Object} Updated user data (safe fields only)
+ * @throws {ApiError} If unauthorized, validation fails, or conflict occurs
+ */
 export const updateUser = asyncHandler(async (req, res) => {
-  let { username, email } = validate(updateProfileSchema, req.body);
+  // Validate input
+  const { username, email } = validate(updateProfileSchema, req.body);
 
-  if (!req.user?._id) {
+  // Auth check (failsafe)
+  const userId = req.user?._id;
+  if (!userId) {
     throw new ApiError(StatusCode.UNAUTHORIZED, "Unauthorized");
   }
 
+  // Check for duplicate email/username (excluding current user)
   const existingUser = await User.findOne({
-    $or: [{ email: email }, { username: username }],
-    _id: { $ne: req.user._id },
-  });
+    _id: { $ne: userId },
+    $or: [{ email }, { username }],
+  }).lean();
 
   if (existingUser) {
     throw new ApiError(StatusCode.CONFLICT, "Email or username already in use");
   }
 
-  // Update user
-  const user = await User.findById(req.user._id);
+  // Fetch current user
+  const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(StatusCode.NOT_FOUND, "User not found");
   }
 
-  user.email = email;
+  // Apply updates
   user.username = username;
+  user.email = email;
 
   await user.save();
 
-  res.status(StatusCode.OK).json({
+  // Response (sanitized)
+  return res.status(StatusCode.OK).json({
     _id: user._id,
     email: user.email,
     username: user.username,

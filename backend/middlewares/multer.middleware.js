@@ -1,6 +1,11 @@
 import multer from "multer";
-// Allowed image MIME types
-const allowedTypes = [
+import { ApiError } from "../utils/ApiError.js";
+import { StatusCode } from "../utils/StatusCode.js";
+
+/**
+ * Allowed MIME types for image uploads
+ */
+const ALLOWED_IMAGE_TYPES = new Set([
   "image/png",
   "image/jpeg",
   "image/jpg",
@@ -11,25 +16,44 @@ const allowedTypes = [
   "image/bmp",
   "image/heic",
   "image/heif",
-];
-// File filter to validate MIME types
+]);
+
+/**
+ * Multer file filter to validate image MIME types
+ *
+ * @param {import("express").Request} req
+ * @param {Express.Multer.File} file
+ * @param {import("multer").FileFilterCallback} cb
+ */
 const fileFilter = (req, file, cb) => {
-  if (!allowedTypes.includes(file.mimetype)) {
+  if (!file?.mimetype || !ALLOWED_IMAGE_TYPES.has(file.mimetype)) {
     return cb(
-      new Error(
+      new ApiError(
+        StatusCode.BAD_REQUEST,
         "Unsupported image format. Allowed: PNG, JPEG, JPG, WEBP, GIF, SVG, AVIF, BMP, HEIC, HEIF"
       )
     );
   }
+
   cb(null, true);
 };
-// Multer configuration with memory storage and limits
+
+/**
+ * Multer middleware for handling file uploads
+ *
+ * - Uses memory storage (buffer-based)
+ * - Restricts file size
+ * - Validates MIME type
+ *
+ * @type {import("multer").Multer}
+ */
 export const upload = multer({
   storage: multer.memoryStorage(),
+
   limits: {
-    fileSize: 30 * 1024 * 1024, // 10MB
+    fileSize: 10 * 1024 * 1024, // 10MB (fixed comment mismatch)
   },
+
   fileFilter,
 });
-//# sourceMappingURL=multer.middleware.js.map
 

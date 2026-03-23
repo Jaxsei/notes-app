@@ -2,14 +2,28 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { StatusCode } from "../utils/StatusCode.js";
+
+/**
+ * @middleware protectRoute
+ * @desc Protect routes by verifying JWT and attaching user to request
+ * @access Private
+ *
+ * @param {import("express").Request & { user?: any }} req
+ * @param {import("express").Response} res
+ * @param {import("express").NextFunction} next
+ *
+ * @returns {Promise<void>}
+ * @throws {ApiError} If token is missing, invalid, expired, or user not found
+ */
 export const protectRoute = async (req, res, next) => {
-  console.log(">>> protectRoute middleware executed");
   try {
-    // Get token from either cookie or Authorization header
-    let token = req.cookies?.refreshToken;
-    console.log(
-      token ? `refreshToken found: ' ${token}` : "refreshToken not found: error"
-    );
+    // Prefer cookie, fallback to Authorization header
+    let token =
+      req.cookies?.refreshToken ||
+      (req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.split(" ")[1]
+        : null);
+
     if (!token) {
       return next(
         new ApiError(
@@ -18,41 +32,61 @@ export const protectRoute = async (req, res, next) => {
         )
       );
     }
-    // Fail-safe for missing secret
+
+    // Ensure secret exists
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       throw new Error("JWT_SECRET not defined in environment");
     }
-    // Decode token
-    const decoded = jwt.verify(token, secret);
-    const userId = decoded.userId || decoded._id;
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, secret);
+    } catch (err) {
+      return next(
+        new ApiError(
+          StatusCode.UNAUTHORIZED,
+          "Unauthorized - Invalid or expired token"
+        )
+      );
+    }
+
+    const userId = decoded?.userId || decoded?._id;
+
     if (!userId) {
       return next(
         new ApiError(StatusCode.UNAUTHORIZED, "Invalid token payload")
       );
     }
-    // Find user
-    const user = await User.findById(userId).select("-password");
+
+    // Fetch user (exclude sensitive fields)
+    const user = await User.findById(userId).select(
+      "_id username email avatar isVerified"
+    );
+
     if (!user) {
       return next(new ApiError(StatusCode.NOT_FOUND, "User not found"));
     }
-    // Attach user to request
+
+    // Attach safe user object
     req.user = {
       _id: user._id.toString(),
       username: user.username,
       email: user.email,
       avatar: user.avatar,
+      isVerified: user.isVerified,
     };
-    next();
+
+    return next();
   } catch (error) {
-    console.error("Error in protectRoute middleware:", error.message);
+    // Avoid leaking internal errors
     return next(
       new ApiError(
         StatusCode.UNAUTHORIZED,
-        "Unauthorized - Invalid or expired token"
+        "Unauthorized - Authentication failed"
       )
     );
   }
 };
-//# sourceMappingURL=auth.middleware.js.map
 
