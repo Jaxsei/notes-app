@@ -28,6 +28,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(
+app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
