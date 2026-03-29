@@ -5,10 +5,12 @@ import dotenv from "dotenv";
 import path from "path";
 import helmet from "helmet";
 import morgan from "morgan";
-import authRoutes from "./routes/auth.routes.js";
-import noteRoutes from "./routes/note.routes.js";
+import authRoutes from './routes/auth.routes.js';
+import noteRoutes from './routes/note.routes.js';
+
 
 const __dirname = path.resolve();
+
 
 // Load environment variables
 dotenv.config();
@@ -18,12 +20,10 @@ const app = express();
 
 // Middleware
 app.set("trust proxy", 1);
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
@@ -31,8 +31,8 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "img-src": ["'self'", "data:", "https://res.cloudinary.com"],
       },
     },
   })
@@ -52,4 +52,3 @@ if (process.env.NODE_ENV === "production") {
 }
 
 export { app };
-
