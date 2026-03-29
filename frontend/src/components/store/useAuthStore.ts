@@ -24,9 +24,9 @@ export interface AuthCredentials {
   password: string;
 }
 
-export interface SignupData extends Omit<User, "_id" | "isVerified" | "otp"> { }
+export interface SignupData extends Omit<User, "_id" | "isVerified" | "otp"> {}
 
-export interface ProfileUpdateData extends Partial<Omit<User, "_id">> { }
+export interface ProfileUpdateData extends Partial<Omit<User, "_id">> {}
 
 export interface OtpData {
   email: string;
@@ -83,6 +83,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
       });
       set({ authUser: res.data });
+      await get().checkAuth();
       toast.success("Account created successfully");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Signup failed");
@@ -96,6 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const res = await axiosInstance.post<User>("/auth/login", data);
       set({ authUser: res.data });
+      await get().checkAuth();
       toast.success("Logged in successfully");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Login failed");
@@ -123,6 +125,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
       });
       set({ authUser: res.data });
+      await get().checkAuth();
       toast.success("Profile updated successfully");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Update failed");
@@ -160,6 +163,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const res = await axiosInstance.put<User>("/auth/update-user", data);
       set({ authUser: res.data });
+      await get().checkAuth();
       toast.success("User updated successfully");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Update failed");
@@ -167,5 +171,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isUpdatingUser: false });
     }
   },
-
 }));
+

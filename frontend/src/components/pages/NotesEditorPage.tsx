@@ -1,13 +1,10 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, lazy } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ModeToggle } from "../utils/mode-toggle";
-import Quill from "react-quill";
-import ReactQuill from "react-quill";
 import {
   ArrowLeft,
   Share2,
   MoreVertical,
-  Check,
   FilePenLine,
   Star,
   Trash2,
@@ -31,6 +28,9 @@ import { useNoteStore } from "../store/useNoteStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { exportNoteAsDelta } from "../utils/exportNote";
 import { toast } from "sonner";
+
+const ReactQuill = lazy(() => import("react-quill"));
+const Quill = lazy(() => import("react-quill"));
 
 // Mock ReactQuill component with enhanced styling
 const modules = {
